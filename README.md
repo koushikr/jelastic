@@ -1,3 +1,4 @@
-# zeus
+# jelastic
 
-Zeus is layer7 entity pinning construct to bind a particular entity's traffic to a DC
+A java interface on top of Elastic search to provide with a functional query language.
+
