@@ -2,20 +2,15 @@ package io.github.jelastic.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
+import io.github.jelastic.models.filter.Filter;
+import io.github.jelastic.models.paged.PageWindow;
+import io.github.jelastic.models.sorter.Sorter;
+import lombok.*;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
-
-import io.github.jelastic.models.filter.Filter;
-import io.github.jelastic.models.paged.PageWindow;
-import io.github.jelastic.models.sorter.Sorter;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-import lombok.Setter;
 
 /**
  * Created by koushikr

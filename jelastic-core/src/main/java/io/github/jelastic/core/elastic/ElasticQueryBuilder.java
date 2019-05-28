@@ -22,7 +22,7 @@ public class ElasticQueryBuilder implements FilterVisitor<QueryBuilder> {
   /* Fields and values are being lower-cased, before adding as clauses, since elasticsearch deals with lowercase only */
   private static Object getNormalizedValue(Object object) {
     if (object instanceof String) {
-      return ((String) object);
+      return object;
     }
     return object;
   }

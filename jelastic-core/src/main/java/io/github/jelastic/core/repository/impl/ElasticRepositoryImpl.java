@@ -71,8 +71,7 @@ public class ElasticRepositoryImpl implements SourceRepository {
   }
 
   @Override
-  public Void createMapping(String indexName, String mappingType, Object mappingSource)
-      throws Exception {
+  public Void createMapping(String indexName, String mappingType, Object mappingSource) {
     elasticClient.getClient().admin().indices().preparePutMapping(indexName).setType(mappingType)
         .setSource(mappingSource).execute().actionGet();
 
@@ -81,7 +80,7 @@ public class ElasticRepositoryImpl implements SourceRepository {
 
   @Override
   public void closeClient() {
-    elasticClient.getClient().close();
+    elasticClient.stop();
   }
 
   @Override

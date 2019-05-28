@@ -14,17 +14,12 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-/**
- * Created by koushikr
- */
 
 /**
  * A Dropwizard managed Elasticsearch {@link Client}. Depending on the {@link io.github.jelastic.core.config.EsConfiguration} a
@@ -78,7 +73,7 @@ public class ElasticClient {
   }
 
 
-  public void stop() throws Exception {
+  public void stop() {
     log.info("Stopped ES client");
 
     if (client != null) {

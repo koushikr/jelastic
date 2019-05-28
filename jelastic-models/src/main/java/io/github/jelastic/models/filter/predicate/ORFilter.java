@@ -1,16 +1,12 @@
 package io.github.jelastic.models.filter.predicate;
 
 
-import java.util.List;
-
 import io.github.jelastic.models.filter.Filter;
 import io.github.jelastic.models.filter.FilterType;
 import io.github.jelastic.models.filter.FilterVisitor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Singular;
-import lombok.ToString;
+import lombok.*;
+
+import java.util.List;
 
 /**
  * Created by koushikr

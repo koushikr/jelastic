@@ -1,8 +1,9 @@
 package io.github.jelastic.models.paged;
 
-import javax.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Data;
+
+import javax.validation.constraints.Min;
 
 /**
  * Created by koushikr

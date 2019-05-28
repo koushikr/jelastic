@@ -1,11 +1,12 @@
 package io.github.jelastic.models.sorter;
 
 import com.google.common.collect.ComparisonChain;
-import javax.validation.constraints.Min;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.constraints.Min;
 
 /**
  * Created by koushikr
