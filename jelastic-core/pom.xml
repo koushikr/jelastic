@@ -37,9 +37,15 @@
             <artifactId>dropwizard-validation</artifactId>
         </dependency>
 
+        <!-- ElasticSearch Dependencies -->
         <dependency>
-            <groupId>com.phonepe.platform</groupId>
-            <artifactId>zeus-models</artifactId>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>transport</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.jelastic</groupId>
+            <artifactId>jelastic-models</artifactId>
             <version>${jelastic.models.version}</version>
             <exclusions>
                 <exclusion>
