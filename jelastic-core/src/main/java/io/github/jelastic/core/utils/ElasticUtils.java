@@ -1,6 +1,5 @@
 package io.github.jelastic.core.utils;
 
-import io.github.jelastic.core.repository.ElasticRepository;
 import io.github.jelastic.models.source.CreateTemplateRequest;
 import io.github.jelastic.models.source.GetSourceRequest;
 import lombok.val;

@@ -1,13 +1,11 @@
 package io.github.jelastic.core.repository;
 
 import com.google.common.collect.Lists;
-import io.github.jelastic.models.source.*;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.utils.ElasticUtils;
 import io.github.jelastic.core.utils.SerDe;
-import io.github.jelastic.models.query.Query;
-import io.github.jelastic.models.query.paged.PageWindow;
+import io.github.jelastic.models.source.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -15,12 +13,9 @@ import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
-import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesResponse;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
-import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetResponse;
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.support.WriteRequest;
@@ -34,7 +29,8 @@ import org.elasticsearch.search.sort.SortBuilders;
 
 import javax.inject.Singleton;
 import java.io.Closeable;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by koushikr
