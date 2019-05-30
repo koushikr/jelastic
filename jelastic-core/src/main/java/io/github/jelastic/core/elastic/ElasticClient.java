@@ -1,3 +1,18 @@
+/*
+ * Copyright 2019 Koushik R <rkoushik.14@gmail.com>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.jelastic.core.elastic;
 
 import com.google.common.base.Function;
@@ -9,7 +24,6 @@ import io.github.jelastic.core.config.EsConfiguration;
 import io.github.jelastic.core.helpers.TransportAddressHelper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
@@ -21,16 +35,6 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/**
- * A Dropwizard managed Elasticsearch {@link Client}. Depending on the {@link io.github.jelastic.core.config.EsConfiguration} a
- * Node Client or a {@link TransportClient} a is being created and its lifecycle is managed by
- * Dropwizard.
- *
- * @see <a href="http://www.elasticsearch.org/guide/reference/java-api/client/#nodeclient">Node
- * Client</a>
- * @see <a href="http://www.elasticsearch.org/guide/reference/java-api/client/#transportclient">Transport
- * Client</a>
- */
 @Slf4j
 @Getter
 public class ElasticClient {

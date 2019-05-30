@@ -13,32 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.jelastic.models.query.filter;
+package io.github.jelastic.models.helper;
+
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+
+import java.util.HashMap;
 
 /**
- * Created by koushikr
+ * @author koushik
  */
-public interface FilterType {
+@EqualsAndHashCode(callSuper = true)
+@Data
+@NoArgsConstructor
+public class MapElement extends HashMap<String, Object> {
 
-  /* number filters */
-  String GREATER_EQUAL = "GREATER_EQUAL";
-  String GREATER_THAN = "GREATER_THAN";
-  String LESS_EQUAL = "LESS_EQUAL";
-  String LESS_THAN = "LESS_THAN";
-  String BETWEEN = "BETWEEN";
+    public void addElement(String name, Object value) {
+        this.put(name, value);
+    }
 
-  /* general */
-  String EQUALS = "EQUALS";
-  String IN = "IN";
-  String NOT_IN = "NOT_IN";
-  String NOT_EQUALS = "NOT_EQUALS";
-  String ANY = "ANY";
-  String EXISTS = "EXISTS";
-  String MISSING = "MISSING";
-  String CONTAINS = "CONTAINS";
-
-  /* Predicates */
-  String AND = "AND";
-  String OR = "OR";
-
+    public void merge(MapElement mapElement) {
+        this.putAll(mapElement);
+    }
 }

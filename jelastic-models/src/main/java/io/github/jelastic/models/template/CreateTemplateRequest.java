@@ -13,32 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.jelastic.models.query.filter;
+package io.github.jelastic.models.template;
+
+import io.github.jelastic.models.helper.MapElement;
+import io.github.jelastic.models.index.IndexProperties;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
- * Created by koushikr
+ * @author koushik
  */
-public interface FilterType {
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class CreateTemplateRequest {
 
-  /* number filters */
-  String GREATER_EQUAL = "GREATER_EQUAL";
-  String GREATER_THAN = "GREATER_THAN";
-  String LESS_EQUAL = "LESS_EQUAL";
-  String LESS_THAN = "LESS_THAN";
-  String BETWEEN = "BETWEEN";
+    private String templateName;
 
-  /* general */
-  String EQUALS = "EQUALS";
-  String IN = "IN";
-  String NOT_IN = "NOT_IN";
-  String NOT_EQUALS = "NOT_EQUALS";
-  String ANY = "ANY";
-  String EXISTS = "EXISTS";
-  String MISSING = "MISSING";
-  String CONTAINS = "CONTAINS";
+    private String indexPattern;
 
-  /* Predicates */
-  String AND = "AND";
-  String OR = "OR";
+    private String mappingType;
 
+    private IndexProperties indexProperties;
+
+    private MapElement mappingSource;
+
+    private MapElement analysis;
 }
