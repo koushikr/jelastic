@@ -39,7 +39,4 @@ public class EsConfiguration {
   @JsonProperty
   private String settingsFile = null;
 
-  private int numberOfShards = 1;
-
-  private int numberOfReplicas = 1;
 }

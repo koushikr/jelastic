@@ -1,11 +1,11 @@
 package io.github.jelastic.core.elastic;
 
 
-import io.github.jelastic.models.filter.FilterVisitor;
-import io.github.jelastic.models.filter.general.*;
-import io.github.jelastic.models.filter.number.*;
-import io.github.jelastic.models.filter.predicate.AndFilter;
-import io.github.jelastic.models.filter.predicate.ORFilter;
+import io.github.jelastic.models.query.filter.FilterVisitor;
+import io.github.jelastic.models.query.filter.general.*;
+import io.github.jelastic.models.query.filter.number.*;
+import io.github.jelastic.models.query.filter.predicate.AndFilter;
+import io.github.jelastic.models.query.filter.predicate.ORFilter;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 

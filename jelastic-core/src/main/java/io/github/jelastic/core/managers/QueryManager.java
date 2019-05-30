@@ -1,7 +1,7 @@
 package io.github.jelastic.core.managers;
 
 import io.github.jelastic.core.elastic.ElasticQueryBuilder;
-import io.github.jelastic.models.Query;
+import io.github.jelastic.models.query.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;

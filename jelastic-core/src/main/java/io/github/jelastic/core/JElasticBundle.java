@@ -12,8 +12,7 @@ import io.github.jelastic.core.config.EsConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.health.EsClientHealth;
 import io.github.jelastic.core.managers.QueryManager;
-import io.github.jelastic.core.repository.SourceRepository;
-import io.github.jelastic.core.repository.impl.ElasticRepositoryImpl;
+import io.github.jelastic.core.repository.ElasticRepository;
 import io.github.jelastic.core.utils.SerDe;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,9 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class JElasticBundle<T extends Configuration> implements ConfiguredBundle<T> {
 
     public abstract EsConfiguration getElasticConfiguration(T configuration);
+    @Getter
     private ElasticClient client;
     @Getter
-    private SourceRepository repository;
+    private ElasticRepository repository;
 
     /**
      * Sets the objectMapper properties and initializes elasticClient, along with its health check
@@ -49,22 +49,9 @@ public abstract class JElasticBundle<T extends Configuration> implements Configu
 
         EsConfiguration esConfiguration = getElasticConfiguration(configuration);
         client = new ElasticClient(esConfiguration);
-        repository = new ElasticRepositoryImpl(client, new QueryManager(), esConfiguration);
+        repository = new ElasticRepository(client, new QueryManager());
 
         environment.healthChecks().register("jelastic-health-check", new EsClientHealth(client, esConfiguration));
-        environment.lifecycle().manage(new Managed() {
-            @Override
-            public void start() {
-                log.info("Starting ES Bundle");
-            }
-
-            @Override
-            public void stop() {
-                log.info("Stopping ES Bundle");
-                repository.closeClient();
-                log.info("Stopped ES Bundle");
-            }
-        });
     }
 
     @Override
