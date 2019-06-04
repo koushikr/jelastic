@@ -23,7 +23,7 @@ JElastic is for using elasticsearch within application paradigm without setting 
 ```java
      JElasticBundle jBundle = new JElasticBundle() {
             
-            public JElasticConfiguration getPrimerConfiguration(T configuration) {
+            public JElasticConfiguration getElasticConfiguration(T configuration) {
                 ...
             }
         }
