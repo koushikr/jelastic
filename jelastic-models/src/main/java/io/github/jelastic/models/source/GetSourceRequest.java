@@ -26,7 +26,6 @@ import lombok.*;
 @Setter
 @Builder
 public class GetSourceRequest<T> {
-
     private String referenceId;
     private String indexName;
     private String mappingType;

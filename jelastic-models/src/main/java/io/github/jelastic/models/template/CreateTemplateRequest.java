@@ -30,16 +30,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class CreateTemplateRequest {
-
     private String templateName;
-
     private String indexPattern;
-
     private String mappingType;
-
     private IndexProperties indexProperties;
-
     private MapElement mappingSource;
-
     private MapElement analysis;
 }

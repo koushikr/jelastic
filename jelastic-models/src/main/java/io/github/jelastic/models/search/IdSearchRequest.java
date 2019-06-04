@@ -28,7 +28,6 @@ import java.util.List;
 @Setter
 @Builder
 public class IdSearchRequest<T> {
-
     private String index;
     private String type;
     private List<String> ids;

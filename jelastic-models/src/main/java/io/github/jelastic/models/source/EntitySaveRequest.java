@@ -26,7 +26,6 @@ import lombok.*;
 @Setter
 @Builder
 public class EntitySaveRequest {
-
     private String indexName;
     private String mappingType;
     private String referenceId;
