@@ -51,7 +51,7 @@ JElastic is for using elasticsearch within application paradigm without setting 
                                         .klass(Example.class)
                                         .build();
       
-      elasticRepository.search(searchRequest)
+      List<T> sources = elasticRepository.search(searchRequest)
 ```
 
 ### Maven Dependency
