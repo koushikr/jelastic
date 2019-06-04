@@ -21,14 +21,16 @@ JElastic is for using elasticsearch within application paradigm without setting 
 
 #### Bootstrap
 ```java
-    @Override
-    public void initialize(final Bootstrap...) {
-        bootstrap.addBundle(new JElasticBundle() {
+     JElasticBundle jBundle = new JElasticBundle() {
             
             public JElasticConfiguration getPrimerConfiguration(T configuration) {
                 ...
             }
-        });
+        }
+            
+    @Override
+    public void initialize(final Bootstrap...) {
+        bootstrap.addBundle(jBundle);
     }
 ```
 
@@ -51,7 +53,7 @@ JElastic is for using elasticsearch within application paradigm without setting 
                                         .klass(Example.class)
                                         .build();
       
-      List<T> sources = elasticRepository.search(searchRequest)
+      List<T> sources = jBundle.getRepository().search(searchRequest)
 ```
 
 ### Maven Dependency
