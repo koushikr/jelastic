@@ -33,9 +33,6 @@
     </developers>
 
     <properties>
-        <!--module versions-->
-        <jelastic.models.version>0.0.1-SNAPSHOT</jelastic.models.version>
-
         <!--lib versions-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lombok.version>1.18.2</lombok.version>
@@ -145,20 +142,6 @@
                 <artifactId>transport</artifactId>
                 <version>${elasticsearch.version}</version>
             </dependency>
-
-            <dependency>
-                <groupId>io.github.jelastic</groupId>
-                <artifactId>jelastic-models</artifactId>
-                <version>${jelastic.models.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>*</groupId>
-                        <artifactId>*</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-
         </dependencies>
 
     <profiles>
