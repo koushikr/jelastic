@@ -27,7 +27,7 @@ import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.health.EsClientHealth;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.repository.ElasticRepository;
-import io.github.jelastic.core.utils.SerDe;
+import io.github.jelastic.core.utils.MapperUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +59,7 @@ public abstract class JElasticBundle<T extends Configuration> implements Configu
         environment.getObjectMapper().configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         environment.getObjectMapper().configure(DeserializationFeature.READ_ENUMS_USING_TO_STRING, true);
 
-        SerDe.init(environment.getObjectMapper());
+        MapperUtils.init(environment.getObjectMapper());
 
         EsConfiguration esConfiguration = getElasticConfiguration(configuration);
         client = new ElasticClient(esConfiguration);

@@ -19,7 +19,7 @@ import com.google.common.collect.Lists;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.utils.ElasticUtils;
-import io.github.jelastic.core.utils.SerDe;
+import io.github.jelastic.core.utils.MapperUtils;
 import io.github.jelastic.models.mapping.CreateMappingRequest;
 import io.github.jelastic.models.search.IdSearchRequest;
 import io.github.jelastic.models.search.SearchRequest;
@@ -124,7 +124,7 @@ public class ElasticRepository implements Closeable{
     GetResponse getResponse = elasticClient.getClient()
         .get(ElasticUtils.getRequest(getSourceRequest)).get();
     T entity = getResponse.isExists() ?
-            SerDe.mapper().readValue(
+            MapperUtils.mapper().readValue(
                     getResponse.getSourceAsString(), getSourceRequest.getKlass()
             ) :
             null;

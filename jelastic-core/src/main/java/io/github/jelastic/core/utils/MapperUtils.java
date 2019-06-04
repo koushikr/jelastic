@@ -21,7 +21,7 @@ import com.google.common.base.Preconditions;
 /**
  * @author koushik
  */
-public class SerDe {
+public class MapperUtils {
 
 
     private static ObjectMapper mapper;
@@ -31,7 +31,7 @@ public class SerDe {
     }
 
     public static ObjectMapper mapper() {
-        Preconditions.checkNotNull(mapper, "Please call SerDe.init(mapper) to set mapper");
+        Preconditions.checkNotNull(mapper, "Please call MapperUtils.init(mapper) to set mapper");
         return mapper;
     }
 }

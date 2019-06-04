@@ -51,7 +51,7 @@ public interface ElasticUtils {
         return Arrays.stream(response.getHits().getHits())
                 .map(hit -> {
                     final Map<String, Object> result = hit.getSourceAsMap();
-                    return SerDe.mapper().convertValue(result, klass);
+                    return MapperUtils.mapper().convertValue(result, klass);
                 }).collect(Collectors.toList());
     }
 
@@ -60,7 +60,7 @@ public interface ElasticUtils {
         return Arrays.stream(multiGetItemResponses.getResponses())
                 .map(hit -> {
                     final Map<String, Object> result = hit.getResponse().getSourceAsMap();
-                    return SerDe.mapper().convertValue(result, klass);
+                    return MapperUtils.mapper().convertValue(result, klass);
                 }).collect(Collectors.toList());
     }
 
