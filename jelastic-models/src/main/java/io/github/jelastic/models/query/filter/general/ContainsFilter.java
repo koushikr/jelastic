@@ -30,20 +30,20 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class ContainsFilter extends Filter {
 
-  private String value;
+    private String value;
 
-  public ContainsFilter() {
-    super(FilterType.CONTAINS);
-  }
+    public ContainsFilter() {
+        super(FilterType.CONTAINS);
+    }
 
-  public ContainsFilter(String field, String value) {
-    super(FilterType.CONTAINS, field);
-    this.value = value;
-  }
+    public ContainsFilter(String field, String value) {
+        super(FilterType.CONTAINS, field);
+        this.value = value;
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 
 }

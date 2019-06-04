@@ -30,17 +30,17 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class ExistsFilter extends Filter {
 
-  public ExistsFilter() {
-    super(FilterType.EXISTS);
-  }
+    public ExistsFilter() {
+        super(FilterType.EXISTS);
+    }
 
-  public ExistsFilter(String field) {
-    super(FilterType.EXISTS, field);
-  }
+    public ExistsFilter(String field) {
+        super(FilterType.EXISTS, field);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 
 }

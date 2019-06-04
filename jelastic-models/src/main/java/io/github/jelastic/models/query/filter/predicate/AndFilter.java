@@ -30,26 +30,26 @@ import java.util.List;
 @ToString(callSuper = true)
 public class AndFilter extends Filter {
 
-  @Singular
-  private List<Filter> filters;
+    @Singular
+    private List<Filter> filters;
 
-  protected AndFilter() {
-    super(FilterType.AND);
-  }
+    protected AndFilter() {
+        super(FilterType.AND);
+    }
 
-  @Builder
-  public AndFilter(@Singular List<Filter> filters) {
-    super(FilterType.AND);
-    this.filters = filters;
-  }
+    @Builder
+    public AndFilter(@Singular List<Filter> filters) {
+        super(FilterType.AND);
+        this.filters = filters;
+    }
 
-  @Override
-  public boolean validate() {
-    return filters.stream().map(Filter::validate).reduce((x, y) -> x && y).orElse(false);
-  }
+    @Override
+    public boolean validate() {
+        return filters.stream().map(Filter::validate).reduce((x, y) -> x && y).orElse(false);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

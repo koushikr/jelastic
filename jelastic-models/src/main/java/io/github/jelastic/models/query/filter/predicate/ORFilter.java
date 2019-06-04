@@ -31,26 +31,26 @@ import java.util.List;
 @ToString(callSuper = true)
 public class ORFilter extends Filter {
 
-  @Singular
-  private List<Filter> filters;
+    @Singular
+    private List<Filter> filters;
 
-  protected ORFilter() {
-    super(FilterType.OR);
-  }
+    protected ORFilter() {
+        super(FilterType.OR);
+    }
 
-  @Builder
-  public ORFilter(@Singular List<Filter> filters) {
-    super(FilterType.OR);
-    this.filters = filters;
-  }
+    @Builder
+    public ORFilter(@Singular List<Filter> filters) {
+        super(FilterType.OR);
+        this.filters = filters;
+    }
 
-  @Override
-  public boolean validate() {
-    return filters.stream().map(Filter::validate).reduce((x, y) -> x && y).orElse(false);
-  }
+    @Override
+    public boolean validate() {
+        return filters.stream().map(Filter::validate).reduce((x, y) -> x && y).orElse(false);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

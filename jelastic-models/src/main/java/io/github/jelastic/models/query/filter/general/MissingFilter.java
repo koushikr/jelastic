@@ -30,16 +30,16 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class MissingFilter extends Filter {
 
-  public MissingFilter() {
-    super(FilterType.MISSING);
-  }
+    public MissingFilter() {
+        super(FilterType.MISSING);
+    }
 
-  public MissingFilter(String field) {
-    super(FilterType.MISSING, field);
-  }
+    public MissingFilter(String field) {
+        super(FilterType.MISSING, field);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

@@ -30,33 +30,33 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class EqualsFilter extends Filter {
 
-  private Object value;
+    private Object value;
 
-  public EqualsFilter() {
-    super(FilterType.EQUALS);
-  }
+    public EqualsFilter() {
+        super(FilterType.EQUALS);
+    }
 
-  public EqualsFilter(String operator) {
-    super(operator);
-  }
+    public EqualsFilter(String operator) {
+        super(operator);
+    }
 
-  public EqualsFilter(String operator, String field) {
-    super(operator, field);
-  }
+    public EqualsFilter(String operator, String field) {
+        super(operator, field);
+    }
 
-  public EqualsFilter(String field, Object value) {
-    super(FilterType.EQUALS, field);
-    this.value = value;
-  }
+    public EqualsFilter(String field, Object value) {
+        super(FilterType.EQUALS, field);
+        this.value = value;
+    }
 
-  public EqualsFilter(String operator, String field, Object value) {
-    super(operator, field);
-    this.value = value;
-  }
+    public EqualsFilter(String operator, String field, Object value) {
+        super(operator, field);
+        this.value = value;
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 
 }

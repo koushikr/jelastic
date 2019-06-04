@@ -30,12 +30,12 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class AnyFilter extends Filter {
 
-  public AnyFilter() {
-    super(FilterType.ANY, "any");
-  }
+    public AnyFilter() {
+        super(FilterType.ANY, "any");
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

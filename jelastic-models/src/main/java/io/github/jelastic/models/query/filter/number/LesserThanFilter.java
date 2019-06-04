@@ -29,16 +29,16 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class LesserThanFilter extends NumberFilter {
 
-  public LesserThanFilter() {
-    super(FilterType.LESS_THAN);
-  }
+    public LesserThanFilter() {
+        super(FilterType.LESS_THAN);
+    }
 
-  public LesserThanFilter(String field, Number value, boolean includeLower, boolean includeUpper) {
-    super(FilterType.LESS_THAN, field, value, includeLower, includeUpper);
-  }
+    public LesserThanFilter(String field, Number value, boolean includeLower, boolean includeUpper) {
+        super(FilterType.LESS_THAN, field, value, includeLower, includeUpper);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

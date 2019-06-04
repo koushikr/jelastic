@@ -28,22 +28,22 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public abstract class NumberFilter extends Filter {
 
-  private Number value;
+    private Number value;
 
-  private boolean includeLower;
+    private boolean includeLower;
 
-  private boolean includeUpper;
+    private boolean includeUpper;
 
-  protected NumberFilter(final String operator) {
-    super(operator);
-  }
+    protected NumberFilter(final String operator) {
+        super(operator);
+    }
 
-  protected NumberFilter(final String operator, String field, Number value, boolean includeLower,
-      boolean includeUpper) {
-    super(operator, field);
-    this.value = value;
-    this.includeLower = includeLower;
-    this.includeUpper = includeUpper;
-  }
+    protected NumberFilter(final String operator, String field, Number value, boolean includeLower,
+                           boolean includeUpper) {
+        super(operator, field);
+        this.value = value;
+        this.includeLower = includeLower;
+        this.includeUpper = includeUpper;
+    }
 
 }

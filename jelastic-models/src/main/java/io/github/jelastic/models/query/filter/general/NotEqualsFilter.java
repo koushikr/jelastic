@@ -30,19 +30,19 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class NotEqualsFilter extends Filter {
 
-  private Object value;
+    private Object value;
 
-  public NotEqualsFilter() {
-    super(FilterType.NOT_EQUALS);
-  }
+    public NotEqualsFilter() {
+        super(FilterType.NOT_EQUALS);
+    }
 
-  public NotEqualsFilter(String field, String value) {
-    super(FilterType.NOT_EQUALS, field);
-    this.value = value;
-  }
+    public NotEqualsFilter(String field, String value) {
+        super(FilterType.NOT_EQUALS, field);
+        this.value = value;
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

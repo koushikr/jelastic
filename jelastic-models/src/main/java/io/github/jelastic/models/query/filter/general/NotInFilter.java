@@ -32,21 +32,21 @@ import java.util.List;
 @ToString(callSuper = true)
 public class NotInFilter extends Filter {
 
-  private List<Object> values;
+    private List<Object> values;
 
-  public NotInFilter() {
-    super(FilterType.NOT_IN);
-  }
+    public NotInFilter() {
+        super(FilterType.NOT_IN);
+    }
 
-  public NotInFilter(String field, List<Object> values) {
-    super(FilterType.NOT_IN, field);
-    this.values = values;
-  }
+    public NotInFilter(String field, List<Object> values) {
+        super(FilterType.NOT_IN, field);
+        this.values = values;
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 
 
 }

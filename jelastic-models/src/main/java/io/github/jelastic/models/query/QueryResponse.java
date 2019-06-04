@@ -29,8 +29,8 @@ import java.util.List;
 @Builder
 public class QueryResponse {
 
-  private long count;
+    private long count;
 
-  private List<?> entities;
+    private List<?> entities;
 
 }

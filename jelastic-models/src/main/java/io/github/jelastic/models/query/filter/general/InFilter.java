@@ -32,19 +32,19 @@ import java.util.List;
 @ToString(callSuper = true)
 public class InFilter extends Filter {
 
-  private List<Object> values;
+    private List<Object> values;
 
-  public InFilter() {
-    super(FilterType.IN);
-  }
+    public InFilter() {
+        super(FilterType.IN);
+    }
 
-  public InFilter(String field, List<Object> values) {
-    super(FilterType.IN, field);
-    this.values = values;
-  }
+    public InFilter(String field, List<Object> values) {
+        super(FilterType.IN, field);
+        this.values = values;
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

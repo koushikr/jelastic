@@ -29,17 +29,17 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class LesserEqualsFilter extends NumberFilter {
 
-  public LesserEqualsFilter() {
-    super(FilterType.LESS_EQUAL);
-  }
+    public LesserEqualsFilter() {
+        super(FilterType.LESS_EQUAL);
+    }
 
-  public LesserEqualsFilter(String field, Number value, boolean includeLower,
-      boolean includeUpper) {
-    super(FilterType.LESS_EQUAL, field, value, includeLower, includeUpper);
-  }
+    public LesserEqualsFilter(String field, Number value, boolean includeLower,
+                              boolean includeUpper) {
+        super(FilterType.LESS_EQUAL, field, value, includeLower, includeUpper);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

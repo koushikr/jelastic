@@ -20,6 +20,6 @@ package io.github.jelastic.models.query.sorter;
  */
 public enum SortOrder {
 
-  ASC, DESC
+    ASC, DESC
 
 }

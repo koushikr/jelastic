@@ -25,36 +25,36 @@ import io.github.jelastic.models.query.filter.predicate.ORFilter;
  */
 public interface FilterVisitor<T> {
 
-  T visit(ContainsFilter filter);
+    T visit(ContainsFilter filter);
 
-  T visit(LesserThanFilter filter);
+    T visit(LesserThanFilter filter);
 
-  T visit(LesserEqualsFilter filter);
+    T visit(LesserEqualsFilter filter);
 
-  T visit(GreaterThanFilter filter);
+    T visit(GreaterThanFilter filter);
 
-  T visit(BetweenFilter filter);
+    T visit(BetweenFilter filter);
 
-  T visit(GreaterEqualsFilter filter);
+    T visit(GreaterEqualsFilter filter);
 
-  T visit(NotInFilter filter);
+    T visit(NotInFilter filter);
 
-  T visit(NotEqualsFilter filter);
+    T visit(NotEqualsFilter filter);
 
-  T visit(MissingFilter filter);
+    T visit(MissingFilter filter);
 
-  T visit(InFilter filter);
+    T visit(InFilter filter);
 
-  default T visit(ExistsFilter filter) {
-    return null;
-  }
+    default T visit(ExistsFilter filter) {
+        return null;
+    }
 
-  T visit(EqualsFilter filter);
+    T visit(EqualsFilter filter);
 
-  T visit(AnyFilter filter);
+    T visit(AnyFilter filter);
 
-  T visit(AndFilter andFilter);
+    T visit(AndFilter andFilter);
 
-  T visit(ORFilter orFilter);
+    T visit(ORFilter orFilter);
 
 }

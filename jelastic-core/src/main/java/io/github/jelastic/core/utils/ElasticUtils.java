@@ -31,13 +31,6 @@ import java.util.stream.Collectors;
  */
 public interface ElasticUtils {
 
-    interface ElasticProperties{
-        String NO_OF_SHARDS = "number_of_shards";
-        String NO_OF_REPLICAS = "number_of_replicas";
-        String INDEX_REQUEST_CACHE = "index.requests.cache.enable";
-        String ANALYSIS = "analysis";
-    }
-
     static SortOrder getSortOrder(io.github.jelastic.models.query.sorter.SortOrder sortOrder) {
         switch (sortOrder) {
             case ASC:
@@ -47,7 +40,7 @@ public interface ElasticUtils {
         }
     }
 
-    static  <T> List<T> getResponse(SearchResponse response, Class<T> klass) {
+    static <T> List<T> getResponse(SearchResponse response, Class<T> klass) {
         return Arrays.stream(response.getHits().getHits())
                 .map(hit -> {
                     final Map<String, Object> result = hit.getSourceAsMap();
@@ -55,8 +48,7 @@ public interface ElasticUtils {
                 }).collect(Collectors.toList());
     }
 
-
-    static  <T> List<T> getResponse(MultiGetResponse multiGetItemResponses, Class<T> klass) {
+    static <T> List<T> getResponse(MultiGetResponse multiGetItemResponses, Class<T> klass) {
         return Arrays.stream(multiGetItemResponses.getResponses())
                 .map(hit -> {
                     final Map<String, Object> result = hit.getResponse().getSourceAsMap();
@@ -64,11 +56,11 @@ public interface ElasticUtils {
                 }).collect(Collectors.toList());
     }
 
-    static GetRequest getRequest(GetSourceRequest getSourceRequest){
+    static GetRequest getRequest(GetSourceRequest getSourceRequest) {
         return new GetRequest(getSourceRequest.getIndexName(), getSourceRequest.getMappingType(), getSourceRequest.getReferenceId());
     }
 
-    static Map<String, Object> getSettings(CreateTemplateRequest createTemplateRequest){
+    static Map<String, Object> getSettings(CreateTemplateRequest createTemplateRequest) {
         val indexProperties = createTemplateRequest.getIndexProperties();
         Map<String, Object> settings = new HashMap<String, Object>() {
             {
@@ -81,5 +73,12 @@ public interface ElasticUtils {
             settings.put(ElasticProperties.ANALYSIS, createTemplateRequest.getAnalysis());
         }
         return settings;
+    }
+
+    interface ElasticProperties {
+        String NO_OF_SHARDS = "number_of_shards";
+        String NO_OF_REPLICAS = "number_of_replicas";
+        String INDEX_REQUEST_CACHE = "index.requests.cache.enable";
+        String ANALYSIS = "analysis";
     }
 }

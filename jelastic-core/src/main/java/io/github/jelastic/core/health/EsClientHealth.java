@@ -28,25 +28,25 @@ import org.elasticsearch.cluster.health.ClusterHealthStatus;
 @Slf4j
 public class EsClientHealth extends HealthCheck {
 
-  private final ElasticClient elasticClient;
-  private final EsConfiguration esConfiguration;
+    private final ElasticClient elasticClient;
+    private final EsConfiguration esConfiguration;
 
-  public EsClientHealth(ElasticClient elasticClient, EsConfiguration esConfiguration) {
-    this.elasticClient = elasticClient;
-    this.esConfiguration = esConfiguration;
-  }
-
-  @Override
-  protected Result check() {
-    final ClusterHealthStatus status = elasticClient.getClient().admin().cluster().prepareHealth()
-        .get().getStatus();
-
-    if (status == ClusterHealthStatus.RED || (esConfiguration.isFailOnYellow()
-        && status == ClusterHealthStatus.YELLOW)) {
-      return Result.unhealthy("Last status: %s", status.name());
-    } else {
-      return Result.healthy("Last status: %s", status.name());
+    public EsClientHealth(ElasticClient elasticClient, EsConfiguration esConfiguration) {
+        this.elasticClient = elasticClient;
+        this.esConfiguration = esConfiguration;
     }
 
-  }
+    @Override
+    protected Result check() {
+        final ClusterHealthStatus status = elasticClient.getClient().admin().cluster().prepareHealth()
+                .get().getStatus();
+
+        if (status == ClusterHealthStatus.RED || (esConfiguration.isFailOnYellow()
+                && status == ClusterHealthStatus.YELLOW)) {
+            return Result.unhealthy("Last status: %s", status.name());
+        } else {
+            return Result.healthy("Last status: %s", status.name());
+        }
+
+    }
 }

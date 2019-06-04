@@ -30,22 +30,22 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class BetweenFilter extends Filter {
 
-  private Number from;
+    private Number from;
 
-  private Number to;
+    private Number to;
 
-  public BetweenFilter() {
-    super(FilterType.BETWEEN);
-  }
+    public BetweenFilter() {
+        super(FilterType.BETWEEN);
+    }
 
-  public BetweenFilter(String field, Number from, Number to) {
-    super(FilterType.BETWEEN, field);
-    this.from = from;
-    this.to = to;
-  }
+    public BetweenFilter(String field, Number from, Number to) {
+        super(FilterType.BETWEEN, field);
+        this.from = from;
+        this.to = to;
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 }

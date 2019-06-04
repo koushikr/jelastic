@@ -39,51 +39,51 @@ import java.nio.file.Paths;
 @Getter
 public class ElasticClient {
 
-  public final EsConfiguration esConfiguration;
-  private TransportClient client;
+    public final EsConfiguration esConfiguration;
+    private TransportClient client;
 
-  public ElasticClient(EsConfiguration configuration) throws IOException {
-    Preconditions.checkNotNull(configuration, "Es configuration can't be null");
+    public ElasticClient(EsConfiguration configuration) throws IOException {
+        Preconditions.checkNotNull(configuration, "Es configuration can't be null");
 
-    this.esConfiguration = configuration;
+        this.esConfiguration = configuration;
 
-    final Settings.Builder settingsBuilder = Settings.builder();
+        final Settings.Builder settingsBuilder = Settings.builder();
 
-    if (!Strings.isNullOrEmpty(esConfiguration.getSettingsFile())) {
-      Path path = Paths.get(esConfiguration.getSettingsFile());
-      if (!path.toFile().exists()) {
-        try {
-          final URL url = Resources.getResource(esConfiguration.getSettingsFile());
-          path = new File(url.toURI()).toPath();
-        } catch (URISyntaxException | NullPointerException e) {
-          throw new IllegalArgumentException("settings file cannot be found", e);
+        if (!Strings.isNullOrEmpty(esConfiguration.getSettingsFile())) {
+            Path path = Paths.get(esConfiguration.getSettingsFile());
+            if (!path.toFile().exists()) {
+                try {
+                    final URL url = Resources.getResource(esConfiguration.getSettingsFile());
+                    path = new File(url.toURI()).toPath();
+                } catch (URISyntaxException | NullPointerException e) {
+                    throw new IllegalArgumentException("settings file cannot be found", e);
+                }
+            }
+            settingsBuilder.loadFromPath(path);
         }
-      }
-      settingsBuilder.loadFromPath(path);
+
+        final Settings settings = settingsBuilder
+                .putProperties(esConfiguration.getSettings(), (Function<String, String>) s -> s)
+                .put("cluster.name", esConfiguration.getClusterName())
+                .build();
+
+        this.client = new PreBuiltTransportClient(settings);
+
+        for (HostAndPort hostAndPort : esConfiguration.getServers()) {
+            this.client.addTransportAddress(TransportAddressHelper.fromHostAndPort(hostAndPort));
+        }
+
+        log.info("Started Es client");
     }
 
-    final Settings settings = settingsBuilder
-        .putProperties(esConfiguration.getSettings(), (Function<String, String>) s -> s)
-        .put("cluster.name", esConfiguration.getClusterName())
-        .build();
 
-    this.client = new PreBuiltTransportClient(settings);
+    public void stop() {
+        log.info("Stopped ES client");
 
-    for (HostAndPort hostAndPort : esConfiguration.getServers()) {
-      this.client.addTransportAddress(TransportAddressHelper.fromHostAndPort(hostAndPort));
+        if (client != null) {
+            client.close();
+        }
+
+        log.info("Stopped ES client");
     }
-
-    log.info("Started Es client");
-  }
-
-
-  public void stop() {
-    log.info("Stopped ES client");
-
-    if (client != null) {
-      client.close();
-    }
-
-    log.info("Stopped ES client");
-  }
 }

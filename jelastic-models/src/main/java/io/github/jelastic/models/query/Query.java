@@ -37,34 +37,34 @@ import java.util.TreeSet;
 @Builder
 public class Query {
 
-  public static String RAW_QUERY_NAME = "rawQuery";
-  @NonNull
-  public PageWindow pageWindow;
-  @Builder.Default
-  private String queryName = "query";
-  @JsonProperty
-  @NonNull
-  @Builder.Default
-  private Set<Filter> filters = new HashSet();
-  @JsonProperty
-  @NonNull
-  @Builder.Default
-  private Set<Sorter> sorters = new TreeSet();
+    public static String RAW_QUERY_NAME = "rawQuery";
+    @NonNull
+    public PageWindow pageWindow;
+    @Builder.Default
+    private String queryName = "query";
+    @JsonProperty
+    @NonNull
+    @Builder.Default
+    private Set<Filter> filters = new HashSet();
+    @JsonProperty
+    @NonNull
+    @Builder.Default
+    private Set<Sorter> sorters = new TreeSet();
 
-  public void addFilter(Filter filter) {
-    if (Objects.isNull(filters) || filters.isEmpty()) {
-      this.filters = Sets.newHashSet(filter);
-    } else {
-      this.filters.add(filter);
-    }
-  }
-
-  public void addSorter(Sorter sorter) {
-    if (Objects.isNull(sorters) || sorters.isEmpty()) {
-      this.sorters = Sets.newTreeSet();
+    public void addFilter(Filter filter) {
+        if (Objects.isNull(filters) || filters.isEmpty()) {
+            this.filters = Sets.newHashSet(filter);
+        } else {
+            this.filters.add(filter);
+        }
     }
 
-    this.sorters.add(sorter);
-  }
+    public void addSorter(Sorter sorter) {
+        if (Objects.isNull(sorters) || sorters.isEmpty()) {
+            this.sorters = Sets.newTreeSet();
+        }
+
+        this.sorters.add(sorter);
+    }
 
 }

@@ -30,19 +30,19 @@ import javax.validation.constraints.Min;
 @Builder
 public class Sorter implements Comparable<Sorter> {
 
-  @Min(1)
-  public int priority;
+    @Min(1)
+    public int priority;
 
-  @NonNull
-  @NotEmpty
-  private String fieldName;
+    @NonNull
+    @NotEmpty
+    private String fieldName;
 
-  private SortOrder sortOrder;
+    private SortOrder sortOrder;
 
-  @Override
-  public int compareTo(Sorter o) {
-    return ComparisonChain.start()
-        .compare(priority, o.getPriority())
-        .result();
-  }
+    @Override
+    public int compareTo(Sorter o) {
+        return ComparisonChain.start()
+                .compare(priority, o.getPriority())
+                .result();
+    }
 }

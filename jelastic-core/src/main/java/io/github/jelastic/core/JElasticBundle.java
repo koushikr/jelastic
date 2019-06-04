@@ -39,16 +39,18 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class JElasticBundle<T extends Configuration> implements ConfiguredBundle<T> {
 
-    public abstract EsConfiguration getElasticConfiguration(T configuration);
     @Getter
     private ElasticClient client;
     @Getter
     private ElasticRepository repository;
 
+    public abstract EsConfiguration getElasticConfiguration(T configuration);
+
     /**
      * Sets the objectMapper properties and initializes elasticClient, along with its health check
-     * @param configuration     {@link T}               The typed config against which the said TrouperBundle is initialized
-     * @param environment       {@link Environment}     The dropwizard environment object.
+     *
+     * @param configuration {@link T}               The typed config against which the said TrouperBundle is initialized
+     * @param environment   {@link Environment}     The dropwizard environment object.
      */
     @Override
     public void run(T configuration, Environment environment) throws Exception {

@@ -29,17 +29,17 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class GreaterThanFilter extends NumberFilter {
 
-  public GreaterThanFilter() {
-    super(FilterType.GREATER_THAN);
-  }
+    public GreaterThanFilter() {
+        super(FilterType.GREATER_THAN);
+    }
 
-  public GreaterThanFilter(String field, Number value, boolean includeLower, boolean includeUpper) {
-    super(FilterType.GREATER_THAN, field, value, includeLower, includeUpper);
-  }
+    public GreaterThanFilter(String field, Number value, boolean includeLower, boolean includeUpper) {
+        super(FilterType.GREATER_THAN, field, value, includeLower, includeUpper);
+    }
 
-  @Override
-  public <V> V accept(FilterVisitor<V> visitor) {
-    return visitor.visit(this);
-  }
+    @Override
+    public <V> V accept(FilterVisitor<V> visitor) {
+        return visitor.visit(this);
+    }
 
 }
