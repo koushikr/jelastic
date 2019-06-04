@@ -8,10 +8,29 @@
     <packaging>pom</packaging>
     <version>0.0.1-SNAPSHOT</version>
 
-    <modules>
-        <module>jelastic-models</module>
-        <module>jelastic-core</module>
-    </modules>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:https://github.com/koushikr/jelastic.git</connection>
+        <developerConnection>scm:git:https://github.com/koushikr/jelastic.git</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/koushikr/jelastic.git</url>
+    </scm>
+
+    <developers>
+        <developer>
+            <id>koushikr</id>
+            <name>Koushik Ramachandra</name>
+            <email>rkoushik.14@gmail.com</email>
+        </developer>
+    </developers>
 
     <properties>
         <!--module versions-->
@@ -45,7 +64,7 @@
 
     </properties>
 
-    <dependencyManagement>
+
         <dependencies>
             <dependency>
                 <groupId>org.projectlombok</groupId>
@@ -84,13 +103,6 @@
                 <version>${jackson.version}</version>
             </dependency>
 
-            <!-- ElasticSearch Dependencies -->
-            <dependency>
-                <groupId>org.elasticsearch.client</groupId>
-                <artifactId>transport</artifactId>
-                <version>${elasticsearch.version}</version>
-            </dependency>
-
             <!-- https://mvnrepository.com/artifact/junit/junit -->
             <dependency>
                 <groupId>junit</groupId>
@@ -127,9 +139,27 @@
                 <version>1.3.2</version>
             </dependency>
 
-        </dependencies>
+            <!-- ElasticSearch Dependencies -->
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>transport</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
 
-    </dependencyManagement>
+            <dependency>
+                <groupId>io.github.jelastic</groupId>
+                <artifactId>jelastic-models</artifactId>
+                <version>${jelastic.models.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>*</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+
+        </dependencies>
 
     <profiles>
         <profile>
@@ -245,5 +275,14 @@
             </snapshots>
         </repository>
     </repositories>
+
+
+    <distributionManagement>
+        <repository>
+            <id>clojars</id>
+            <name>Clojars repository</name>
+            <url>https://clojars.org/repo</url>
+        </repository>
+    </distributionManagement>
 
 </project>
