@@ -35,15 +35,15 @@ import java.util.Map;
 @NoArgsConstructor
 @EqualsAndHashCode
 @ToString
-public class EsConfiguration {
-
-    @JsonProperty
-    @NotNull
-    private List<HostAndPort> servers = Collections.emptyList();
+public class JElasticConfiguration {
 
     @JsonProperty
     @NotEmpty
     private String clusterName = "elasticsearch";
+
+    @JsonProperty
+    @NotNull
+    private List<HostAndPort> servers = Collections.emptyList();
 
     @JsonProperty
     private boolean failOnYellow = false;

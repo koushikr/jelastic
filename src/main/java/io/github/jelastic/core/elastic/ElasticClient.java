@@ -20,7 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
 import com.google.common.net.HostAndPort;
-import io.github.jelastic.core.config.EsConfiguration;
+import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.helpers.TransportAddressHelper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,21 +39,21 @@ import java.nio.file.Paths;
 @Getter
 public class ElasticClient {
 
-    public final EsConfiguration esConfiguration;
+    public final JElasticConfiguration JElasticConfiguration;
     private TransportClient client;
 
-    public ElasticClient(EsConfiguration configuration) throws IOException {
+    public ElasticClient(JElasticConfiguration configuration) throws IOException {
         Preconditions.checkNotNull(configuration, "Es configuration can't be null");
 
-        this.esConfiguration = configuration;
+        this.JElasticConfiguration = configuration;
 
         final Settings.Builder settingsBuilder = Settings.builder();
 
-        if (!Strings.isNullOrEmpty(esConfiguration.getSettingsFile())) {
-            Path path = Paths.get(esConfiguration.getSettingsFile());
+        if (!Strings.isNullOrEmpty(JElasticConfiguration.getSettingsFile())) {
+            Path path = Paths.get(JElasticConfiguration.getSettingsFile());
             if (!path.toFile().exists()) {
                 try {
-                    final URL url = Resources.getResource(esConfiguration.getSettingsFile());
+                    final URL url = Resources.getResource(JElasticConfiguration.getSettingsFile());
                     path = new File(url.toURI()).toPath();
                 } catch (URISyntaxException | NullPointerException e) {
                     throw new IllegalArgumentException("settings file cannot be found", e);
@@ -63,13 +63,13 @@ public class ElasticClient {
         }
 
         final Settings settings = settingsBuilder
-                .putProperties(esConfiguration.getSettings(), (Function<String, String>) s -> s)
-                .put("cluster.name", esConfiguration.getClusterName())
+                .putProperties(JElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
+                .put("cluster.name", JElasticConfiguration.getClusterName())
                 .build();
 
         this.client = new PreBuiltTransportClient(settings);
 
-        for (HostAndPort hostAndPort : esConfiguration.getServers()) {
+        for (HostAndPort hostAndPort : JElasticConfiguration.getServers()) {
             this.client.addTransportAddress(TransportAddressHelper.fromHostAndPort(hostAndPort));
         }
 

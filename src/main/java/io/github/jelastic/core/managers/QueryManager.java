@@ -50,4 +50,5 @@ public class QueryManager {
         return boolQueryBuilder;
     }
 
+
 }

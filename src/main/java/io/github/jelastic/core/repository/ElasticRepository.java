@@ -29,6 +29,7 @@ import io.github.jelastic.core.models.source.UpdateEntityRequest;
 import io.github.jelastic.core.models.source.UpdateFieldRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
@@ -60,6 +61,7 @@ import java.util.Optional;
 @Slf4j
 @Singleton
 @AllArgsConstructor
+@Getter
 public class ElasticRepository implements Closeable {
 
     private final ElasticClient elasticClient;

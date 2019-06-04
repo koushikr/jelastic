@@ -22,7 +22,7 @@ import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.github.jelastic.core.config.EsConfiguration;
+import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.health.EsClientHealth;
 import io.github.jelastic.core.managers.QueryManager;
@@ -30,7 +30,6 @@ import io.github.jelastic.core.repository.ElasticRepository;
 import io.github.jelastic.core.utils.MapperUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author koushik
@@ -43,7 +42,7 @@ public abstract class JElasticBundle<T extends Configuration> implements Configu
     @Getter
     private ElasticRepository repository;
 
-    public abstract EsConfiguration getElasticConfiguration(T configuration);
+    public abstract JElasticConfiguration getElasticConfiguration(T configuration);
 
     /**
      * Sets the objectMapper properties and initializes elasticClient, along with its health check
@@ -62,11 +61,11 @@ public abstract class JElasticBundle<T extends Configuration> implements Configu
 
         MapperUtils.init(environment.getObjectMapper());
 
-        EsConfiguration esConfiguration = getElasticConfiguration(configuration);
-        client = new ElasticClient(esConfiguration);
+        JElasticConfiguration JElasticConfiguration = getElasticConfiguration(configuration);
+        client = new ElasticClient(JElasticConfiguration);
         repository = new ElasticRepository(client, new QueryManager());
 
-        environment.healthChecks().register("jelastic-health-check", new EsClientHealth(client, esConfiguration));
+        environment.healthChecks().register("jelastic-health-check", new EsClientHealth(client, JElasticConfiguration));
     }
 
     @Override
