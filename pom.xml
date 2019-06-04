@@ -5,7 +5,7 @@
 
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
     <version>0.0.1-SNAPSHOT</version>
 
     <licenses>

@@ -1,4 +1,3 @@
-# jelastic
+# JElastic
 
-A java interface on top of Elastic search to provide with a functional query language.
-
+[![Travis build status](https://travis-ci.org/koushikr/jelastic.svg?branch=master)](https://travis-ci.org/jelastic/qtrouper)
