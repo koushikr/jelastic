@@ -47,6 +47,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.IndexTemplateMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 
@@ -149,7 +150,7 @@ public class ElasticRepository implements Closeable {
                         entitySaveRequest.getMappingType(),
                         entitySaveRequest.getReferenceId()
                 )
-                .setSource(entitySaveRequest.getValue());
+                .setSource(entitySaveRequest.getValue(), XContentType.JSON);
         indexRequestBuilder.setRefreshPolicy(
                 WriteRequest.RefreshPolicy.IMMEDIATE
         ).execute().get();
