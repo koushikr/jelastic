@@ -17,6 +17,7 @@ package io.github.jelastic.core.repository;
 
 import com.google.common.collect.Lists;
 import io.github.jelastic.core.elastic.ElasticClient;
+import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.utils.ElasticUtils;
 import io.github.jelastic.core.utils.MapperUtils;
@@ -28,6 +29,7 @@ import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.source.UpdateEntityRequest;
 import io.github.jelastic.core.models.source.UpdateFieldRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
+import java.io.IOException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.IndexTemplateMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 
@@ -102,8 +105,8 @@ public class ElasticRepository implements Closeable {
         elasticClient.getClient().admin().indices().putTemplate(mapping).actionGet();
     }
 
-    public void createIndex(String indexName) throws Exception {
-        if (!elasticClient.getClient().admin().indices().prepareExists(indexName).execute().get()
+    public void createIndex(String indexName) {
+        if (!elasticClient.getClient().admin().indices().prepareExists(indexName).execute().actionGet()
                 .isExists()) {
             elasticClient.getClient()
                     .admin()
@@ -122,26 +125,44 @@ public class ElasticRepository implements Closeable {
         }
     }
 
-    public <T> Optional<T> get(GetSourceRequest<T> getSourceRequest) throws Exception {
+    /**
+     * Method to retrieve document based on referenceId.
+     *
+     * @param getSourceRequest getSourceRequest
+     * @param <T> class to be retrieved
+     * @throws JsonMappingException when there is IOException, JsonParseException & JsonMappingException
+     * @return Optional<T>
+     */
+    public <T> Optional<T> get(GetSourceRequest<T> getSourceRequest) {
         GetResponse getResponse = elasticClient.getClient()
-                .get(ElasticUtils.getRequest(getSourceRequest)).get();
-        T entity = getResponse.isExists() ?
-                MapperUtils.mapper().readValue(
+                .get(ElasticUtils.getRequest(getSourceRequest)).actionGet();
+        try{
+            return Optional.ofNullable(
+                    getResponse.isExists() ?
+                    MapperUtils.mapper().readValue(
                         getResponse.getSourceAsString(), getSourceRequest.getKlass()
-                ) :
-                null;
-        return Optional.ofNullable(entity);
+                    ) : null
+            );
+        } catch (IOException io) {
+            throw new JsonMappingException("Exception while mapping response to class ", io);
+        }
     }
 
-    public void save(EntitySaveRequest entitySaveRequest) throws Exception {
+    /**
+     * Method to persist entity into ElasticSearch.
+     *
+     * @param entitySaveRequest entitySaveRequest
+     * @throws IndexNotFoundException when index is not created.
+     */
+    public void save(EntitySaveRequest entitySaveRequest) {
         if (!elasticClient.getClient().admin()
                 .indices()
                 .prepareExists(entitySaveRequest.getIndexName())
                 .execute()
-                .get()
+                .actionGet()
                 .isExists()
                 ) {
-            throw new Exception("Index, " + entitySaveRequest.getIndexName() + " doesn't exist.");
+            throw new IndexNotFoundException("Index, " + entitySaveRequest.getIndexName() + " doesn't exist.");
         }
         val indexRequestBuilder = elasticClient.getClient()
                 .prepareIndex(
@@ -152,11 +173,10 @@ public class ElasticRepository implements Closeable {
                 .setSource(entitySaveRequest.getValue());
         indexRequestBuilder.setRefreshPolicy(
                 WriteRequest.RefreshPolicy.IMMEDIATE
-        ).execute().get();
+        ).execute().actionGet();
     }
 
-    public void update(UpdateEntityRequest updateEntityRequest)
-            throws Exception {
+    public void update(UpdateEntityRequest updateEntityRequest) {
         UpdateRequestBuilder updateRequestBuilder = elasticClient.getClient()
                 .prepareUpdate(
                         updateEntityRequest.getIndexName(),
@@ -164,17 +184,17 @@ public class ElasticRepository implements Closeable {
                         updateEntityRequest.getReferenceId()
                 )
                 .setDoc(updateEntityRequest.getValue());
-        updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().get();
+        updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().actionGet();
     }
 
-    public void updateField(UpdateFieldRequest updateFieldRequest) throws Exception {
+    public void updateField(UpdateFieldRequest updateFieldRequest) {
         UpdateRequest updateRequest = new UpdateRequest(
                 updateFieldRequest.getIndexName(),
                 updateFieldRequest.getMappingType(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
                 .doc(updateFieldRequest.getField(), updateFieldRequest.getValue());
-        elasticClient.getClient().update(updateRequest).get();
+        elasticClient.getClient().update(updateRequest).actionGet();
     }
 
     public void reAlias(String newIndex, String aliasName) {
@@ -210,7 +230,15 @@ public class ElasticRepository implements Closeable {
                 .actionGet();
     }
 
-    public <T> List<T> search(SearchRequest<T> searchRequest) throws Exception {
+    /**
+     * Search elasticSearch based on the search query passed.
+     *
+     * @param searchRequest searchRequest
+     * @param <T> Response class Type
+     * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
+     * @return List<T> list of objects that meet searchCriteria
+     */
+    public <T> List<T> search(SearchRequest<T> searchRequest) {
         val query = searchRequest.getQuery();
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
 
