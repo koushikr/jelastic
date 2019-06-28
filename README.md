@@ -70,14 +70,14 @@ Use the following maven dependency:
 <dependency>
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
-    <version>0.0.3</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
 ### Version support
 | jelastic      |  es transport client|
 | ------------- | ------------------- |
-| 0.0.3         | 7.1.0               |
+| 0.0.2         | 7.1.0               |
 
 ### Configuration
 ```yaml
