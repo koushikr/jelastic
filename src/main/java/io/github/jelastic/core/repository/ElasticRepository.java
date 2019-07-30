@@ -191,7 +191,6 @@ public class ElasticRepository implements Closeable {
     public void updateField(UpdateFieldRequest updateFieldRequest) {
         UpdateRequest updateRequest = new UpdateRequest(
                 updateFieldRequest.getIndexName(),
-                updateFieldRequest.getMappingType(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
                 .doc(updateFieldRequest.getField(), updateFieldRequest.getValue());
