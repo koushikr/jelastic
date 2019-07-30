@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.models.mapping;
 
+import io.github.jelastic.core.models.helper.MapElement;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,6 +42,6 @@ public class CreateMappingRequest {
     private String mappingType;
 
     @NotNull
-    private Object mappingSource;
+    private MapElement mappingSource;
 
 }
