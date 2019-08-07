@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.models.source;
 
+import javax.validation.constraints.NotNull;
 import lombok.*;
 
 /**
@@ -26,7 +27,9 @@ import lombok.*;
 @Setter
 @Builder
 public class GetSourceRequest<T> {
+    @NotNull
     private String referenceId;
+    @NotNull
     private String indexName;
     private String mappingType;
     private Class<T> klass;

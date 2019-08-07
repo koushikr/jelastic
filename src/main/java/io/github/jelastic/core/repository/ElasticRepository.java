@@ -29,7 +29,9 @@ import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.source.UpdateEntityRequest;
 import io.github.jelastic.core.models.source.UpdateFieldRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
+import io.github.jelastic.core.utils.ValidationUtil;
 import java.io.IOException;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +60,7 @@ import javax.inject.Singleton;
 import java.io.Closeable;
 import java.util.List;
 import java.util.Optional;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Created by koushikr
@@ -71,7 +74,7 @@ public class ElasticRepository implements Closeable {
     private final ElasticClient elasticClient;
     private final QueryManager queryManager;
 
-    public IndexTemplateMetaData getTemplate(String templateName) {
+    public IndexTemplateMetaData getTemplate(@NotEmpty String templateName) {
         GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest().names(templateName);
         val getIndexTemplatesResponse = elasticClient.getClient().admin()
                 .indices().getTemplates(getRequest).actionGet();
@@ -80,6 +83,8 @@ public class ElasticRepository implements Closeable {
     }
 
     public void createMapping(CreateMappingRequest mappingRequest) {
+        ValidationUtil.validateRequest(mappingRequest);
+
         elasticClient.getClient()
                 .admin()
                 .indices()
@@ -91,6 +96,8 @@ public class ElasticRepository implements Closeable {
     }
 
     public void createTemplate(CreateTemplateRequest createTemplateRequest) {
+        ValidationUtil.validateRequest(createTemplateRequest);
+
         val mapping = new PutIndexTemplateRequest()
                 .name(createTemplateRequest.getTemplateName())
                 .patterns(
@@ -106,7 +113,7 @@ public class ElasticRepository implements Closeable {
         elasticClient.getClient().admin().indices().putTemplate(mapping).actionGet();
     }
 
-    public void createIndex(String indexName) {
+    public void createIndex(@NotEmpty String indexName) {
         if (!elasticClient.getClient().admin().indices().prepareExists(indexName).execute().actionGet()
                 .isExists()) {
             elasticClient.getClient()
@@ -135,6 +142,8 @@ public class ElasticRepository implements Closeable {
      * @return Optional<T>
      */
     public <T> Optional<T> get(GetSourceRequest<T> getSourceRequest) {
+        ValidationUtil.validateRequest(getSourceRequest);
+
         GetResponse getResponse = elasticClient.getClient()
                 .get(ElasticUtils.getRequest(getSourceRequest)).actionGet();
         try{
@@ -156,6 +165,8 @@ public class ElasticRepository implements Closeable {
      * @throws IndexNotFoundException when index is not created.
      */
     public void save(EntitySaveRequest entitySaveRequest) {
+        ValidationUtil.validateRequest(entitySaveRequest);
+
         if (!elasticClient.getClient().admin()
                 .indices()
                 .prepareExists(entitySaveRequest.getIndexName())
@@ -178,6 +189,8 @@ public class ElasticRepository implements Closeable {
     }
 
     public void update(UpdateEntityRequest updateEntityRequest) {
+        ValidationUtil.validateRequest(updateEntityRequest);
+
         UpdateRequestBuilder updateRequestBuilder = elasticClient.getClient()
                 .prepareUpdate(
                         updateEntityRequest.getIndexName(),
@@ -189,15 +202,17 @@ public class ElasticRepository implements Closeable {
     }
 
     public void updateField(UpdateFieldRequest updateFieldRequest) {
+        ValidationUtil.validateRequest(updateFieldRequest);
+
         UpdateRequest updateRequest = new UpdateRequest(
                 updateFieldRequest.getIndexName(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
-                .doc(updateFieldRequest.getField(), updateFieldRequest.getValue());
+                .doc(updateFieldRequest.getFieldValueMap());
         elasticClient.getClient().update(updateRequest).actionGet();
     }
 
-    public void reAlias(String newIndex, String aliasName) {
+    public void reAlias(@NotEmpty  String newIndex, @NotEmpty String aliasName) {
         GetAliasesResponse var = elasticClient.getClient().admin().indices()
                 .getAliases(new GetAliasesRequest(aliasName)).actionGet();
         ImmutableOpenMap<String, List<AliasMetaData>> aliases = var.getAliases();
@@ -239,6 +254,7 @@ public class ElasticRepository implements Closeable {
      * @return List<T> list of objects that meet searchCriteria
      */
     public <T> List<T> search(SearchRequest<T> searchRequest) {
+        ValidationUtil.validateRequest(searchRequest);
         val query = searchRequest.getQuery();
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
 
@@ -264,6 +280,8 @@ public class ElasticRepository implements Closeable {
     }
 
     public <T> List<T> searchByIds(IdSearchRequest<T> idSearchRequest) {
+        ValidationUtil.validateRequest(idSearchRequest);
+
         MultiGetResponse multiGetItemResponses = elasticClient.getClient().prepareMultiGet().add(
                 idSearchRequest.getIndex(),
                 idSearchRequest.getType(),

@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.models.source;
 
+import javax.validation.constraints.NotNull;
 import lombok.*;
 
 /**
@@ -26,8 +27,13 @@ import lombok.*;
 @Setter
 @Builder
 public class UpdateEntityRequest {
+    @NotNull
     private String indexName;
     private String mappingType;
+
+    @NotNull
     private String referenceId;
+
+    @NotNull
     private String value;
 }

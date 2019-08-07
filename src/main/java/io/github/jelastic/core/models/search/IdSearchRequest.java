@@ -15,10 +15,10 @@
  */
 package io.github.jelastic.core.models.search;
 
+import javax.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
-
 /**
  * @author koushik
  */
@@ -28,8 +28,10 @@ import java.util.List;
 @Setter
 @Builder
 public class IdSearchRequest<T> {
+    @NotNull
     private String index;
     private String type;
+    @NotNull
     private List<String> ids;
     private Class<T> klass;
 }

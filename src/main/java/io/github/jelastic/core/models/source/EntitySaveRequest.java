@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.models.source;
 
+import javax.validation.constraints.NotNull;
 import lombok.*;
 
 /**
@@ -26,9 +27,12 @@ import lombok.*;
 @Setter
 @Builder
 public class EntitySaveRequest {
+
+    @NotNull
     private String indexName;
     private String mappingType;
     private String referenceId;
+    @NotNull
     private String value;
 
 }
