@@ -40,6 +40,7 @@
         <guice.version>4.2.1</guice.version>
         <lombok.maven.version>1.16.6.1</lombok.maven.version>
         <jackson.version>2.9.9.2</jackson.version>
+        <jackson.core.version>2.9.3</jackson.core.version>
         <mockito.version>2.0.2-beta</mockito.version>
 
         <!--Jacoco properties-->
@@ -92,12 +93,12 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
+                <version>${jackson.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
+                <version>${jackson.core.version}</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/junit/junit -->
