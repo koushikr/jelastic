@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
+import io.github.jelastic.core.models.query.paged.PageWindow;
 import io.github.jelastic.core.utils.ElasticUtils;
 import io.github.jelastic.core.utils.MapperUtils;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
@@ -191,6 +192,7 @@ public class ElasticRepository implements Closeable {
     public void updateField(UpdateFieldRequest updateFieldRequest) {
         UpdateRequest updateRequest = new UpdateRequest(
                 updateFieldRequest.getIndexName(),
+                updateFieldRequest.getMappingType(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
                 .doc(updateFieldRequest.getField(), updateFieldRequest.getValue());
@@ -261,6 +263,23 @@ public class ElasticRepository implements Closeable {
                 .actionGet();
 
         return ElasticUtils.getResponse(searchResponse, searchRequest.getKlass());
+    }
+
+    public <T> List<T> search(String index, String type, QueryBuilder queryBuilder,
+                                    PageWindow pageWindow, Class<T> klass) {
+
+        SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
+                .prepareSearch(index)
+                .setTypes(type)
+                .setQuery(queryBuilder);
+
+        SearchResponse searchResponse = searchRequestBuilder
+                .setFrom(pageWindow.getPageNumber() * pageWindow.getPageSize())
+                .setSize(pageWindow.getPageSize())
+                .execute()
+                .actionGet();
+
+        return ElasticUtils.getResponse(searchResponse, klass);
     }
 
     public <T> List<T> searchByIds(IdSearchRequest<T> idSearchRequest) {

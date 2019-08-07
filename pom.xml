@@ -6,7 +6,7 @@
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
     <packaging>jar</packaging>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.3</version>
 
     <licenses>
         <license>
@@ -39,7 +39,7 @@
         <dropwizard.version>1.3.7</dropwizard.version>
         <guice.version>4.2.1</guice.version>
         <lombok.maven.version>1.16.6.1</lombok.maven.version>
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.9.9.2</jackson.version>
         <mockito.version>2.0.2-beta</mockito.version>
 
         <!--Jacoco properties-->
