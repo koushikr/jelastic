@@ -17,6 +17,7 @@ package io.github.jelastic.core.models.template;
 
 import io.github.jelastic.core.models.helper.MapElement;
 import io.github.jelastic.core.models.index.IndexProperties;
+import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,6 +31,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class CreateTemplateRequest {
+    @NotNull
     private String templateName;
     private String indexPattern;
     private String mappingType;

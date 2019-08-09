@@ -15,7 +15,13 @@
  */
 package io.github.jelastic.core.models.source;
 
-import lombok.*;
+import java.util.Map;
+import javax.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * @author koushik
@@ -26,10 +32,15 @@ import lombok.*;
 @Setter
 @Builder
 public class UpdateFieldRequest {
+
+    @NotNull
     private String indexName;
     private String mappingType;
+
+    @NotNull
     private String referenceId;
-    private String field;
-    private Object value;
+
+    @NotNull
+    private Map<String, Object> fieldValueMap;
     private int retryCount;
 }
