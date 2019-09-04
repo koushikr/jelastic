@@ -30,15 +30,15 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class NotInFilter extends Filter {
+public class NotInFilter<T> extends Filter {
 
-    private List<Object> values;
+    private List<T> values;
 
     public NotInFilter() {
         super(FilterType.NOT_IN);
     }
 
-    public NotInFilter(String field, List<Object> values) {
+    public NotInFilter(String field, List<T> values) {
         super(FilterType.NOT_IN, field);
         this.values = values;
     }
