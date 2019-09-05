@@ -198,7 +198,7 @@ public class ElasticRepository implements Closeable {
                         updateEntityRequest.getMappingType(),
                         updateEntityRequest.getReferenceId()
                 )
-                .setDoc(updateEntityRequest.getValue());
+                .setDoc(updateEntityRequest.getValue(), XContentType.JSON);
         updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().actionGet();
     }
 
