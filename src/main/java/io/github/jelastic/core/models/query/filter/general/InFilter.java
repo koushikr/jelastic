@@ -30,15 +30,15 @@ import java.util.List;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class InFilter extends Filter {
+public class InFilter<T> extends Filter {
 
-    private List<Object> values;
+    private List<T> values;
 
     public InFilter() {
         super(FilterType.IN);
     }
 
-    public InFilter(String field, List<Object> values) {
+    public InFilter(String field, List<T> values) {
         super(FilterType.IN, field);
         this.values = values;
     }
