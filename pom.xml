@@ -24,7 +24,6 @@
         <url>https://github.com/koushikr/jelastic.git</url>
     </scm>
 
-    git@github.com:koushikr/jforrest.git
     <developers>
         <developer>
             <id>koushikr</id>
