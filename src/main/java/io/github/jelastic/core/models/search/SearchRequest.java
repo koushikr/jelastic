@@ -16,8 +16,9 @@
 package io.github.jelastic.core.models.search;
 
 import io.github.jelastic.core.models.query.Query;
-import javax.validation.constraints.NotNull;
 import lombok.*;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author koushik

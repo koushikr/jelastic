@@ -65,19 +65,19 @@ Use the following repository:
     <url>https://clojars.org/repo</url>
 </repository>
 ```
-Use the following maven dependency:
+Use the following maven dependency
 ```xml
 <dependency>
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
 </dependency>
 ```
 
 ### Version support
 | jelastic      |  es transport client|
 | ------------- | ------------------- |
-| 0.0.4         | 7.1.0               |
+| 0.0.5         | 7.1.0               |
 
 ### Configuration
 ```yaml

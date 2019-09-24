@@ -19,10 +19,8 @@ import com.google.common.collect.Lists;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
-import io.github.jelastic.core.models.query.paged.PageWindow;
-import io.github.jelastic.core.utils.ElasticUtils;
-import io.github.jelastic.core.utils.MapperUtils;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
+import io.github.jelastic.core.models.query.paged.PageWindow;
 import io.github.jelastic.core.models.search.IdSearchRequest;
 import io.github.jelastic.core.models.search.SearchRequest;
 import io.github.jelastic.core.models.source.EntitySaveRequest;
@@ -30,9 +28,9 @@ import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.source.UpdateEntityRequest;
 import io.github.jelastic.core.models.source.UpdateFieldRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
+import io.github.jelastic.core.utils.ElasticUtils;
+import io.github.jelastic.core.utils.MapperUtils;
 import io.github.jelastic.core.utils.ValidationUtil;
-import java.io.IOException;
-import javax.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -56,12 +54,13 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.inject.Singleton;
 import java.io.Closeable;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Created by koushikr
@@ -207,7 +206,6 @@ public class ElasticRepository implements Closeable {
 
         UpdateRequest updateRequest = new UpdateRequest(
                 updateFieldRequest.getIndexName(),
-                updateFieldRequest.getMappingType(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
                 .doc(updateFieldRequest.getFieldValueMap());
@@ -262,7 +260,6 @@ public class ElasticRepository implements Closeable {
 
         SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
                 .prepareSearch(searchRequest.getIndex())
-                .setTypes(searchRequest.getType())
                 .setQuery(queryBuilder);
 
         if (!query.getSorters().isEmpty()) {
@@ -281,12 +278,11 @@ public class ElasticRepository implements Closeable {
         return ElasticUtils.getResponse(searchResponse, searchRequest.getKlass());
     }
 
-    public <T> List<T> search(String index, String type, QueryBuilder queryBuilder,
+    public <T> List<T> search(String index, QueryBuilder queryBuilder,
                                     PageWindow pageWindow, Class<T> klass) {
 
         SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
                 .prepareSearch(index)
-                .setTypes(type)
                 .setQuery(queryBuilder);
 
         SearchResponse searchResponse = searchRequestBuilder

@@ -1,12 +1,13 @@
 package io.github.jelastic.core.utils;
 
 import io.github.jelastic.core.exception.InvalidRequestException;
-import java.util.Set;
+import lombok.extern.slf4j.Slf4j;
+
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import lombok.extern.slf4j.Slf4j;
+import java.util.Set;
 
 @Slf4j
 public class ValidationUtil {
