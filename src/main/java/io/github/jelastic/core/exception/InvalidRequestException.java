@@ -1,0 +1,7 @@
+package io.github.jelastic.core.exception;
+
+public class InvalidRequestException extends RuntimeException {
+  public InvalidRequestException(String message) {
+    super(message);
+  }
+}

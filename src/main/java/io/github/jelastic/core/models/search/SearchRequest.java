@@ -16,6 +16,7 @@
 package io.github.jelastic.core.models.search;
 
 import io.github.jelastic.core.models.query.Query;
+import javax.validation.constraints.NotNull;
 import lombok.*;
 
 /**
@@ -27,8 +28,11 @@ import lombok.*;
 @Setter
 @Builder
 public class SearchRequest<T> {
+    @NotNull
     private String index;
+    @NotNull
     private String type;
+    @NotNull
     private Query query;
     private Class<T> klass;
 }
