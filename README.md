@@ -70,7 +70,7 @@ Use the following maven dependency
 <dependency>
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
-    <version>0.0.5</version>
+    <version>7.2.0-1</version>
 </dependency>
 ```
 
