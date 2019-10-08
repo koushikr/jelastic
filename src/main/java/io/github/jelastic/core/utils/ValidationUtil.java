@@ -15,15 +15,16 @@ public class ValidationUtil {
   private ValidationUtil() {
   }
 
+  //Was earlier a validation method. Turning this into noop! This method is consuming way too many resources!
   public static <T> void validateRequest(T request) {
-    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-    Validator validator = factory.getValidator();
-    Set<ConstraintViolation<T>> errors = validator.validate(request);
-
-    if (!errors.isEmpty()) {
-      log.error("Error in validating request {} Error : {}", request, errors);
-      throw new InvalidRequestException("Invalid Request");
-    }
+//    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+//    Validator validator = factory.getValidator();
+//    Set<ConstraintViolation<T>> errors = validator.validate(request);
+//
+//    if (!errors.isEmpty()) {
+//      log.error("Error in validating request {} Error : {}", request, errors);
+//      throw new InvalidRequestException("Invalid Request");
+//    }
   }
 }
 
