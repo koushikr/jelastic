@@ -54,4 +54,6 @@ public class JElasticConfiguration {
     @JsonProperty
     private String settingsFile = null;
 
+    @JsonProperty
+    private boolean runWithValidator = false;
 }
