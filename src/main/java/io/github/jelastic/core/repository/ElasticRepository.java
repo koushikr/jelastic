@@ -82,8 +82,19 @@ public class ElasticRepository implements Closeable {
                 null : getIndexTemplatesResponse.getIndexTemplates().get(0);
     }
 
+    /**
+     * Runs with the {@link ValidationUtil} when runWithValidator is true.
+     * Works with the request validation of jaxrs!
+     * @param request Any java object
+     */
+    public <T> void validate(T request){
+        if(elasticClient.getJElasticConfiguration().isRunWithValidator()){
+            ValidationUtil.validateRequest(request);
+        }
+    }
+
     public void createMapping(CreateMappingRequest mappingRequest) {
-        ValidationUtil.validateRequest(mappingRequest);
+        validate(mappingRequest);
 
         elasticClient.getClient()
                 .admin()
@@ -96,7 +107,7 @@ public class ElasticRepository implements Closeable {
     }
 
     public void createTemplate(CreateTemplateRequest createTemplateRequest) {
-        ValidationUtil.validateRequest(createTemplateRequest);
+        validate(createTemplateRequest);
 
         val mapping = new PutIndexTemplateRequest()
                 .name(createTemplateRequest.getTemplateName())
@@ -142,7 +153,7 @@ public class ElasticRepository implements Closeable {
      * @return Optional<T>
      */
     public <T> Optional<T> get(GetSourceRequest<T> getSourceRequest) {
-        ValidationUtil.validateRequest(getSourceRequest);
+        validate(getSourceRequest);
 
         GetResponse getResponse = elasticClient.getClient()
                 .get(ElasticUtils.getRequest(getSourceRequest)).actionGet();
@@ -165,7 +176,7 @@ public class ElasticRepository implements Closeable {
      * @throws IndexNotFoundException when index is not created.
      */
     public void save(EntitySaveRequest entitySaveRequest) {
-        ValidationUtil.validateRequest(entitySaveRequest);
+        validate(entitySaveRequest);
 
         if (!elasticClient.getClient().admin()
                 .indices()
@@ -189,7 +200,7 @@ public class ElasticRepository implements Closeable {
     }
 
     public void update(UpdateEntityRequest updateEntityRequest) {
-        ValidationUtil.validateRequest(updateEntityRequest);
+        validate(updateEntityRequest);
 
         UpdateRequestBuilder updateRequestBuilder = elasticClient.getClient()
                 .prepareUpdate(
@@ -202,7 +213,7 @@ public class ElasticRepository implements Closeable {
     }
 
     public void updateField(UpdateFieldRequest updateFieldRequest) {
-        ValidationUtil.validateRequest(updateFieldRequest);
+       validate(updateFieldRequest);
 
         UpdateRequest updateRequest = new UpdateRequest(
                 updateFieldRequest.getIndexName(),
@@ -254,7 +265,7 @@ public class ElasticRepository implements Closeable {
      * @return List<T> list of objects that meet searchCriteria
      */
     public <T> List<T> search(SearchRequest<T> searchRequest) {
-        ValidationUtil.validateRequest(searchRequest);
+        validate(searchRequest);
         val query = searchRequest.getQuery();
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
 
@@ -295,7 +306,7 @@ public class ElasticRepository implements Closeable {
     }
 
     public <T> List<T> searchByIds(IdSearchRequest<T> idSearchRequest) {
-        ValidationUtil.validateRequest(idSearchRequest);
+        validate(idSearchRequest);
 
         MultiGetResponse multiGetItemResponses = elasticClient.getClient().prepareMultiGet().add(
                 idSearchRequest.getIndex(),
