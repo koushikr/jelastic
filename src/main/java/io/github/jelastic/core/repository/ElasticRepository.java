@@ -219,10 +219,7 @@ public class ElasticRepository implements Closeable {
                 updateFieldRequest.getIndexName(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
-                .doc(
-                    MapperUtils.writeValueAsString(updateFieldRequest.getFieldValueMap()),
-                    XContentType.JSON
-                );
+                .doc(updateFieldRequest.getFieldValueMap());
         elasticClient.getClient().update(updateRequest).actionGet();
     }
 

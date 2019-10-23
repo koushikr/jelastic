@@ -28,7 +28,7 @@ import lombok.SneakyThrows;
 /**
  * Created by koushikr
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "filterType")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "operator")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = GreaterEqualsFilter.class, name = FilterType.GREATER_EQUAL),
         @JsonSubTypes.Type(value = GreaterThanFilter.class, name = FilterType.GREATER_THAN),

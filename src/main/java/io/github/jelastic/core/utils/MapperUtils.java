@@ -15,16 +15,12 @@
  */
 package io.github.jelastic.core.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import io.github.jelastic.core.exception.JelasticException;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author koushik
  */
-@Slf4j
 public class MapperUtils {
 
 
@@ -37,15 +33,5 @@ public class MapperUtils {
     public static ObjectMapper mapper() {
         Preconditions.checkNotNull(mapper, "Please call MapperUtils.init(mapper) to set mapper");
         return mapper;
-    }
-
-    public static <T> String writeValueAsString(T t) {
-        Preconditions.checkNotNull(mapper, "Please call MapperUtils.init(mapper) to set mapper");
-        try {
-            return mapper.writeValueAsString(t);
-        } catch (JsonProcessingException e) {
-            log.error("JsonProcessingException while writing object ", e);
-            throw new JelasticException("JsonProcessingException in method writeValueAsString");
-        }
     }
 }
