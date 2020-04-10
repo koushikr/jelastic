@@ -36,7 +36,7 @@
         <!--lib versions-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lombok.version>1.18.2</lombok.version>
-        <dropwizard.version>2.0.2</dropwizard.version>
+        <dropwizard.version>2.0.7</dropwizard.version>
         <guice.version>4.2.1</guice.version>
         <lombok.maven.version>1.16.6.1</lombok.maven.version>
         <jackson.version>2.9.10.3</jackson.version>
