@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.utils;
 
+import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import lombok.val;
@@ -46,6 +47,17 @@ public interface ElasticUtils {
                     final Map<String, Object> result = hit.getSourceAsMap();
                     return MapperUtils.mapper().convertValue(result, klass);
                 }).collect(Collectors.toList());
+    }
+
+    static <T> JElasticSearchResponse<T> getSearchResponse(SearchResponse response, Class<T> klass) {
+        return JElasticSearchResponse.<T>builder()
+                .count(response.getHits().getTotalHits().value)
+                .entities(Arrays.stream(response.getHits().getHits())
+                        .map(hit -> {
+                            final Map<String, Object> result = hit.getSourceAsMap();
+                            return MapperUtils.mapper().convertValue(result, klass);
+                        }).collect(Collectors.toList()))
+                .build();
     }
 
     static <T> List<T> getResponse(MultiGetResponse multiGetItemResponses, Class<T> klass) {

@@ -17,11 +17,14 @@ package io.github.jelastic.core.repository;
 
 import com.google.common.collect.Lists;
 import io.github.jelastic.core.elastic.ElasticClient;
+import io.github.jelastic.core.elastic.ElasticSortBuilder;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
 import io.github.jelastic.core.models.query.paged.PageWindow;
 import io.github.jelastic.core.models.search.IdSearchRequest;
+import io.github.jelastic.core.models.search.JElasticSearchRequest;
+import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.search.SearchRequest;
 import io.github.jelastic.core.models.source.EntitySaveRequest;
 import io.github.jelastic.core.models.source.GetSourceRequest;
@@ -193,7 +196,8 @@ public class ElasticRepository implements Closeable {
                         entitySaveRequest.getMappingType(),
                         entitySaveRequest.getReferenceId()
                 )
-                .setSource(entitySaveRequest.getValue(), XContentType.JSON);
+                .setSource(entitySaveRequest.getValue(), XContentType.JSON)
+                .setRouting(entitySaveRequest.getRoutingKey());
         indexRequestBuilder.setRefreshPolicy(
                 WriteRequest.RefreshPolicy.IMMEDIATE
         ).execute().actionGet();
@@ -291,6 +295,40 @@ public class ElasticRepository implements Closeable {
 
         return ElasticUtils.getResponse(searchResponse, searchRequest.getKlass());
     }
+
+    /**
+     * Search elasticSearch based on the search query passed.
+     *
+     * @param searchRequest searchRequest
+     * @param <T> Response class Type
+     * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
+     * @return JElasticSearchResponse<T> list of objects that meet searchCriteria
+     */
+    public <T> JElasticSearchResponse<T> enumeratedSearch(JElasticSearchRequest<T> searchRequest) {
+        validate(searchRequest);
+        val query = searchRequest.getQuery();
+        QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
+
+        SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
+                .prepareSearch(searchRequest.getIndex())
+                .setQuery(queryBuilder)
+                .setRouting(searchRequest.getRoutingKeys().toArray(new String[(searchRequest.getRoutingKeys().size())]));
+
+        if (!query.getSorters().isEmpty()) {
+            query.getSorters().forEach(sorter -> searchRequestBuilder.addSort(
+                    sorter.accept(new ElasticSortBuilder())
+            ));
+        }
+
+        SearchResponse searchResponse = searchRequestBuilder
+                .setFrom(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
+                .setSize(query.getPageWindow().getPageSize())
+                .execute()
+                .actionGet();
+
+        return ElasticUtils.getSearchResponse(searchResponse, searchRequest.getKlass());
+    }
+
 
     public <T> List<T> search(String index, QueryBuilder queryBuilder,
                                     PageWindow pageWindow, Class<T> klass) {
