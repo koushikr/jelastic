@@ -271,6 +271,7 @@ public class ElasticRepository implements Closeable {
      * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
      * @return List<T> list of objects that meet searchCriteria
      */
+    @Deprecated
     public <T> List<T> search(SearchRequest<T> searchRequest) {
         validate(searchRequest);
         val query = searchRequest.getQuery();

@@ -28,6 +28,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
+@Deprecated
 public class SearchRequest<T> {
     @NotNull
     private String index;

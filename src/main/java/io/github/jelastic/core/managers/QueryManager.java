@@ -40,6 +40,7 @@ public class QueryManager {
         this.elasticQueryBuilder = new ElasticQueryBuilder();
     }
 
+    @Deprecated
     public QueryBuilder getQueryBuilder(Query query) {
         BoolQueryBuilder boolQueryBuilder = boolQuery();
 

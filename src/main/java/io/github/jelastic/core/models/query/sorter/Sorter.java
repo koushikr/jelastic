@@ -28,6 +28,7 @@ import javax.validation.constraints.Min;
  */
 @Data
 @Builder
+@Deprecated
 public class Sorter implements Comparable<Sorter> {
 
     @Min(1)

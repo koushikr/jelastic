@@ -35,6 +35,7 @@ import java.util.TreeSet;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Deprecated
 public class Query {
 
     public static String RAW_QUERY_NAME = "rawQuery";
