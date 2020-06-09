@@ -8,4 +8,6 @@ public interface SorterVisitor<T> {
 
     T visit(ScriptSorter scriptSorter);
 
+    T visit(ScoreSorter scoreSorter);
+
 }

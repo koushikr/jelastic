@@ -28,6 +28,7 @@ public class GeoDistanceSorter extends JElasticSorter {
     public GeoDistanceSorter(int priority, SortOrder sortOrder, String fieldName, @Singular Set<GeoPoint> geoPoints){
         super(priority, sortOrder, SorterType.GEO_DISTANCE);
         this.geoPoints = geoPoints;
+        this.fieldName = fieldName;
 
     }
 

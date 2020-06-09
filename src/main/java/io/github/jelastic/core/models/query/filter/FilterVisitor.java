@@ -57,4 +57,8 @@ public interface FilterVisitor<T> {
 
     T visit(ORFilter orFilter);
 
+    T visit(ConstantScoreFilter constantScoreFilter);
+
+    T visit(MatchFilter matchFilter);
+
 }

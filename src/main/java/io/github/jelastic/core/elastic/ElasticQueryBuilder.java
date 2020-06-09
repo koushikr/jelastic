@@ -133,4 +133,16 @@ public class ElasticQueryBuilder implements FilterVisitor<QueryBuilder> {
         orFilter.getFilters().forEach(k -> boolQueryBuilder.should(k.accept(this)));
         return boolQueryBuilder;
     }
+
+    @Override
+    public QueryBuilder visit(ConstantScoreFilter constantScoreFilter) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery();
+        constantScoreFilter.getFilters().forEach(k -> boolQueryBuilder.must(k.accept(this)));
+        return constantScoreQuery(boolQueryBuilder);
+    }
+
+    @Override
+    public QueryBuilder visit(MatchFilter matchFilter) {
+        return matchQuery(matchFilter.getFieldName(), matchFilter.getValue());
+    }
 }

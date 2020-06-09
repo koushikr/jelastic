@@ -26,10 +26,7 @@ import io.github.jelastic.core.models.search.IdSearchRequest;
 import io.github.jelastic.core.models.search.JElasticSearchRequest;
 import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.search.SearchRequest;
-import io.github.jelastic.core.models.source.EntitySaveRequest;
-import io.github.jelastic.core.models.source.GetSourceRequest;
-import io.github.jelastic.core.models.source.UpdateEntityRequest;
-import io.github.jelastic.core.models.source.UpdateFieldRequest;
+import io.github.jelastic.core.models.source.*;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import io.github.jelastic.core.utils.ElasticUtils;
 import io.github.jelastic.core.utils.MapperUtils;
@@ -43,6 +40,8 @@ import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -196,8 +195,9 @@ public class ElasticRepository implements Closeable {
                         entitySaveRequest.getMappingType(),
                         entitySaveRequest.getReferenceId()
                 )
-                .setSource(entitySaveRequest.getValue(), XContentType.JSON)
-                .setRouting(entitySaveRequest.getRoutingKey());
+                .setSource(entitySaveRequest.getValue(), XContentType.JSON);
+        if (entitySaveRequest.getRoutingKey() !=null)  indexRequestBuilder.setRouting(entitySaveRequest.getRoutingKey());
+
         indexRequestBuilder.setRefreshPolicy(
                 WriteRequest.RefreshPolicy.IMMEDIATE
         ).execute().actionGet();
@@ -213,6 +213,7 @@ public class ElasticRepository implements Closeable {
                         updateEntityRequest.getReferenceId()
                 )
                 .setDoc(updateEntityRequest.getValue(), XContentType.JSON);
+        if (updateEntityRequest.getRoutingKey() !=null)  updateRequestBuilder.setRouting(updateEntityRequest.getRoutingKey());
         updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().actionGet();
     }
 
@@ -223,6 +224,7 @@ public class ElasticRepository implements Closeable {
                 updateFieldRequest.getIndexName(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
+                .routing(updateFieldRequest.getRoutingKey())
             .doc(
                 MapperUtils.writeValueAsString(updateFieldRequest.getFieldValueMap()),
                 XContentType.JSON
@@ -312,9 +314,10 @@ public class ElasticRepository implements Closeable {
 
         SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
                 .prepareSearch(searchRequest.getIndex())
-                .setQuery(queryBuilder)
-                .setRouting(searchRequest.getRoutingKeys().toArray(new String[(searchRequest.getRoutingKeys().size())]));
-
+                .setQuery(queryBuilder);
+        if (searchRequest.getRoutingKeys() != null) {
+            searchRequestBuilder.setRouting(searchRequest.getRoutingKeys().toArray(new String[(searchRequest.getRoutingKeys().size())]));
+        }
         if (!query.getSorters().isEmpty()) {
             query.getSorters().forEach(sorter -> searchRequestBuilder.addSort(
                     sorter.accept(new ElasticSortBuilder())
@@ -357,6 +360,24 @@ public class ElasticRepository implements Closeable {
         ).get();
 
         return ElasticUtils.getResponse(multiGetItemResponses, idSearchRequest.getKlass());
+    }
+
+  /**
+   * Method to delete a document based on reference id
+   * @param deleteEntityRequest
+   */
+  public void delete(DeleteEntityRequest deleteEntityRequest) {
+        validate(deleteEntityRequest);
+
+        DeleteRequestBuilder deleteRequestBuilder = elasticClient.getClient()
+                .prepareDelete(
+                deleteEntityRequest.getIndexName(),
+                deleteEntityRequest.getMappingType(),
+                deleteEntityRequest.getReferenceId()
+                );
+        if (deleteEntityRequest.getRoutingKey() !=null)  deleteRequestBuilder.setRouting(deleteEntityRequest.getRoutingKey());
+        DeleteResponse deleteResponse = deleteRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+                .execute().actionGet();
     }
 
     @Override

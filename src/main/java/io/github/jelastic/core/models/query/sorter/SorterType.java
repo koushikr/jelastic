@@ -8,4 +8,6 @@ public interface SorterType {
 
     String SCRIPT = "SCRIPT";
 
+    String SCORE = "SCORE";
+
 }

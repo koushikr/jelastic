@@ -1,9 +1,6 @@
 package io.github.jelastic.core.elastic;
 
-import io.github.jelastic.core.models.query.sorter.FieldSorter;
-import io.github.jelastic.core.models.query.sorter.GeoDistanceSorter;
-import io.github.jelastic.core.models.query.sorter.ScriptSorter;
-import io.github.jelastic.core.models.query.sorter.SorterVisitor;
+import io.github.jelastic.core.models.query.sorter.*;
 import io.github.jelastic.core.utils.ElasticUtils;
 import org.elasticsearch.common.geo.GeoPoint;
 import org.elasticsearch.search.sort.SortBuilder;
@@ -30,4 +27,8 @@ public class ElasticSortBuilder implements SorterVisitor<SortBuilder> {
                 .order(ElasticUtils.getSortOrder(scriptSorter.getSortOrder()));
     }
 
+    @Override
+    public SortBuilder visit(ScoreSorter scoreSorter) {
+        return SortBuilders.scoreSort().order(ElasticUtils.getSortOrder(scoreSorter.getSortOrder()));
+    }
 }
