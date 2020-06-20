@@ -330,11 +330,10 @@ public class ElasticRepository implements Closeable {
      * @param <T> Response class Type
      * @param index Index to be loaded
      * @param query jelastic query object
-     * @param batchSize Will tell ElasticClient the size of each fetch, should be <= 10000.
+     * @param batchSize Will tell ElasticClient the size of each fetch, should be <= 10000 for better performance
      * @return List<T> list of all objects in that index
      */
     public <T> List<T> loadAll(String index, Query query, Integer batchSize, Class<T> klass) {
-        assert batchSize <= 10000;
         final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
