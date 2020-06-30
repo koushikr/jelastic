@@ -327,13 +327,17 @@ public class ElasticRepository implements Closeable {
 
     /**
      * Load data of entire index based on batchSize using ES scroll API
+     * During first request to ES we send scroll ttl and the response return result along with scroll Id. Then for all
+     * subsequent we send this scroll id as request param. ES knows how much data is returned in previous calls. We fetch
+     * the data in batches using batchSize which should be < 10k for better performance
+     *
      * @param <T> Response class Type
      * @param index Index to be loaded
      * @param query jelastic query object
      * @param batchSize Will tell ElasticClient the size of each fetch, should be <= 10000 for better performance
      * @return List<T> list of all objects in that index
      */
-    public <T> List<T> loadAll(String index, Query query, Integer batchSize, Class<T> klass) {
+    public <T> List<T> loadAll(String index, Query query, int batchSize, Class<T> klass) {
         final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
 
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
