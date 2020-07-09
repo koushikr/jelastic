@@ -16,6 +16,7 @@
 package io.github.jelastic.core.repository;
 
 import com.google.common.collect.Lists;
+import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
@@ -66,6 +67,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by koushikr
@@ -78,6 +80,7 @@ public class ElasticRepository implements Closeable {
 
     private final ElasticClient elasticClient;
     private final QueryManager queryManager;
+    private final JElasticConfiguration JElasticConfiguration;
 
     public IndexTemplateMetaData getTemplate(@NotEmpty String templateName) {
         GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest().names(templateName);
@@ -339,6 +342,7 @@ public class ElasticRepository implements Closeable {
      */
     public <T> List<T> loadAll(String index, Query query, int batchSize, Class<T> klass) {
         final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+        final int maxResultSize = JElasticConfiguration.getMaxResultSize();
 
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
         SearchRequestBuilder searchRequestBuilder = elasticClient
@@ -365,6 +369,14 @@ public class ElasticRepository implements Closeable {
                     .actionGet();
             batchedResult = ElasticUtils.getResponse(searchResponse, klass);
             totalResult.addAll(batchedResult);
+
+            if(totalResult.size() >= maxResultSize){
+                log.warn("Result size exceeds configured limit of {}, Please try changing it.", maxResultSize);
+                totalResult = totalResult
+                        .stream()
+                        .limit(maxResultSize).collect(Collectors.toList());
+                break;
+            }
         }
         return totalResult;
     }
