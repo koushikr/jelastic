@@ -58,6 +58,6 @@ public class JElasticConfiguration {
     @JsonProperty
     private boolean runWithValidator = false;
 
-    @JsonIgnore
+    @JsonProperty
     private int maxResultSize = 10000;
 }

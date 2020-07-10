@@ -18,6 +18,7 @@ package io.github.jelastic.core.repository;
 import com.google.common.collect.Lists;
 import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
+import io.github.jelastic.core.exception.JelasticException;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
@@ -370,12 +371,9 @@ public class ElasticRepository implements Closeable {
             batchedResult = ElasticUtils.getResponse(searchResponse, klass);
             totalResult.addAll(batchedResult);
 
-            if(totalResult.size() >= maxResultSize){
-                log.warn("Result size exceeds configured limit of {}, Please try changing it.", maxResultSize);
-                totalResult = totalResult
-                        .stream()
-                        .limit(maxResultSize).collect(Collectors.toList());
-                break;
+            if(totalResult.size() + batchSize > maxResultSize){
+                log.error("Result size exceeds configured limit of {}, Please try changing it.", maxResultSize);
+                throw new JelasticException("Result size exceeds configured limit.");
             }
         }
         return totalResult;
