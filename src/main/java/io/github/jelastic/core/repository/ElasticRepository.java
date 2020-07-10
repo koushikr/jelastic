@@ -16,10 +16,13 @@
 package io.github.jelastic.core.repository;
 
 import com.google.common.collect.Lists;
+import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
+import io.github.jelastic.core.exception.JelasticException;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
+import io.github.jelastic.core.models.query.Query;
 import io.github.jelastic.core.models.query.paged.PageWindow;
 import io.github.jelastic.core.models.search.IdSearchRequest;
 import io.github.jelastic.core.models.search.SearchRequest;
@@ -44,23 +47,28 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
 import org.elasticsearch.cluster.metadata.IndexTemplateMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.inject.Singleton;
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by koushikr
@@ -73,6 +81,7 @@ public class ElasticRepository implements Closeable {
 
     private final ElasticClient elasticClient;
     private final QueryManager queryManager;
+    private final JElasticConfiguration JElasticConfiguration;
 
     public IndexTemplateMetaData getTemplate(@NotEmpty String templateName) {
         GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest().names(templateName);
@@ -318,6 +327,58 @@ public class ElasticRepository implements Closeable {
         ).get();
 
         return ElasticUtils.getResponse(multiGetItemResponses, idSearchRequest.getKlass());
+    }
+
+    /**
+     * Load data of entire index based on batchSize using ES scroll API
+     * During first request to ES we send scroll ttl and the response return result along with scroll Id. Then for all
+     * subsequent we send this scroll id as request param. ES knows how much data is returned in previous calls. We fetch
+     * the data in batches using batchSize which should be < 10k for better performance
+     *
+     * @param <T> Response class Type
+     * @param index Index to be loaded
+     * @param query jelastic query object
+     * @param batchSize Will tell ElasticClient the size of each fetch, should be <= 10000 for better performance
+     * @param fetchSize The desired result size
+     * @return List<T> list of all objects in that index
+     */
+    public <T> List<T> loadAll(String index, Query query, int batchSize, int fetchSize, Class<T> klass) {
+        final int maxResultSize = JElasticConfiguration.getMaxResultSize();
+
+        if(fetchSize > maxResultSize){
+            log.error("Result size exceeds configured limit of {}, Please try changing it.", maxResultSize);
+            throw new JelasticException("Result size exceeds configured limit.");
+        }
+
+        final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+        QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
+        SearchRequestBuilder searchRequestBuilder = elasticClient
+                .getClient()
+                .prepareSearch(index)
+                .setQuery(queryBuilder)
+                .setSize(batchSize)
+                .setScroll(scroll);
+        SearchResponse searchResponse = searchRequestBuilder
+                .execute()
+                .actionGet();
+
+        String scrollId = searchResponse.getScrollId();
+        List<T> batchedResult = ElasticUtils.getResponse(searchResponse, klass);
+        List<T> totalResult = new ArrayList<>(batchedResult);
+        int count = 1;
+        while (!batchedResult.isEmpty()) {
+            log.info("Fetching batch {}",count++);
+            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+            scrollRequest.scroll(scroll);
+            searchResponse = elasticClient
+                    .getClient()
+                    .searchScroll(scrollRequest)
+                    .actionGet();
+            batchedResult = ElasticUtils.getResponse(searchResponse, klass);
+            totalResult.addAll(batchedResult);
+
+        }
+        return totalResult;
     }
 
     @Override

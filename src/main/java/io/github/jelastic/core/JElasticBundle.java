@@ -63,7 +63,7 @@ public abstract class JElasticBundle<T extends Configuration> implements Configu
 
         JElasticConfiguration JElasticConfiguration = getElasticConfiguration(configuration);
         client = new ElasticClient(JElasticConfiguration);
-        repository = new ElasticRepository(client, new QueryManager());
+        repository = new ElasticRepository(client, new QueryManager(), JElasticConfiguration);
 
         environment.healthChecks().register("jelastic-health-check", new EsClientHealth(client, JElasticConfiguration));
     }

@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.HostAndPort;
@@ -56,4 +57,7 @@ public class JElasticConfiguration {
 
     @JsonProperty
     private boolean runWithValidator = false;
+
+    @JsonProperty
+    private int maxResultSize = 10000;
 }

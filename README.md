@@ -87,7 +87,8 @@ jelastic:
   servers:
     - localhost:9300
   failOnYellow: false
-  settingsFile: ~/configs/settings.xml    
+  settingsFile: ~/configs/settings.xml
+  maxResultSize: 10000    
 ```
 
 LICENSE
