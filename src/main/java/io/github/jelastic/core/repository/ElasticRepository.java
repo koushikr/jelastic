@@ -367,7 +367,6 @@ public class ElasticRepository implements Closeable {
         List<T> totalResult = new ArrayList<>(batchedResult);
         int count = 1;
         while (!batchedResult.isEmpty()) {
-            log.info("Fetching batch {}",count++);
             SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
             scrollRequest.scroll(scroll);
             searchResponse = elasticClient
