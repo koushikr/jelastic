@@ -94,7 +94,7 @@ jelastic:
 Contributors
 ------------
 * [Koushik R](https://github.com/koushikr)
-* [Sunil Rajasekhar](https://github.com/sunil-rajashekar) 
+* [Sunil Rajashekar](https://github.com/sunil-rajashekar) 
 
 LICENSE
 -------
