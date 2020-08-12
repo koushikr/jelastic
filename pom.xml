@@ -29,6 +29,17 @@
             <id>koushikr</id>
             <name>Koushik Ramachandra</name>
             <email>rkoushik.14@gmail.com</email>
+            <roles>
+                <role>owner</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>sunil-rajashekar</id>
+            <name>Sunil Rajashekar</name>
+            <roles>
+                <role>developer</role>
+            </roles>
         </developer>
     </developers>
 

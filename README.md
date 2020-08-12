@@ -91,6 +91,11 @@ jelastic:
   maxResultSize: 10000    
 ```
 
+Contributors
+------------
+* [Koushik R](https://github.com/koushikr)
+* [Sunil Rajasekhar](https://github.com/sunil-rajashekar) 
+
 LICENSE
 -------
 
