@@ -13,6 +13,7 @@ import javax.validation.constraints.Min;
         @JsonSubTypes.Type(value = FieldSorter.class, name = SorterType.FIELD),
         @JsonSubTypes.Type(value = GeoDistanceSorter.class, name = SorterType.GEO_DISTANCE),
         @JsonSubTypes.Type(value = ScriptSorter.class, name = SorterType.SCRIPT),
+        @JsonSubTypes.Type(value = ScoreSorter.class, name = SorterType.SCORE),
 
 })
 @Data

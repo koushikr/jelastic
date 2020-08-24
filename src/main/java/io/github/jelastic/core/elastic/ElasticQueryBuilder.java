@@ -143,6 +143,6 @@ public class ElasticQueryBuilder implements FilterVisitor<QueryBuilder> {
 
     @Override
     public QueryBuilder visit(MatchFilter matchFilter) {
-        return matchQuery(matchFilter.getFieldName(), matchFilter.getValue());
+        return matchQuery(matchFilter.getFieldName(), getNormalizedValue(matchFilter.getValue()));
     }
 }
