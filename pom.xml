@@ -6,7 +6,7 @@
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
     <packaging>jar</packaging>
-    <version>7.2.0-4-SNAPSHOT</version>
+    <version>7.2.0-5-SNAPSHOT</version>
 
     <licenses>
         <license>
@@ -29,6 +29,17 @@
             <id>koushikr</id>
             <name>Koushik Ramachandra</name>
             <email>rkoushik.14@gmail.com</email>
+            <roles>
+                <role>owner</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>sunil-rajashekar</id>
+            <name>Sunil Rajashekar</name>
+            <roles>
+                <role>developer</role>
+            </roles>
         </developer>
     </developers>
 
@@ -39,7 +50,7 @@
         <dropwizard.version>2.0.7</dropwizard.version>
         <guice.version>4.2.1</guice.version>
         <lombok.maven.version>1.16.6.1</lombok.maven.version>
-        <jackson.version>2.9.10.4</jackson.version>
+        <jackson.version>2.9.10.5</jackson.version>
         <jackson.core.version>2.9.3</jackson.core.version>
         <mockito.version>2.0.2-beta</mockito.version>
 
