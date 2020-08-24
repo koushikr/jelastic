@@ -210,7 +210,7 @@ public class ElasticRepository implements Closeable {
                         entitySaveRequest.getReferenceId()
                 )
                 .setSource(entitySaveRequest.getValue(), XContentType.JSON);
-        if (entitySaveRequest.getRoutingKey() !=null)  indexRequestBuilder.setRouting(entitySaveRequest.getRoutingKey());
+        indexRequestBuilder.setRouting(entitySaveRequest.getRoutingKey());
 
         indexRequestBuilder.setRefreshPolicy(
                 WriteRequest.RefreshPolicy.IMMEDIATE
@@ -227,7 +227,7 @@ public class ElasticRepository implements Closeable {
                         updateEntityRequest.getReferenceId()
                 )
                 .setDoc(updateEntityRequest.getValue(), XContentType.JSON);
-        if (updateEntityRequest.getRoutingKey() !=null)  updateRequestBuilder.setRouting(updateEntityRequest.getRoutingKey());
+        updateRequestBuilder.setRouting(updateEntityRequest.getRoutingKey());
         updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().actionGet();
     }
 
@@ -330,13 +330,13 @@ public class ElasticRepository implements Closeable {
         SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
                 .prepareSearch(searchRequest.getIndex())
                 .setQuery(queryBuilder);
-        if (!searchRequest.getRoutingKeys().isEmpty() && !Objects.isNull(searchRequest.getRoutingKeys())) {
+        if (!Objects.isNull(searchRequest.getRoutingKeys()) && !searchRequest.getRoutingKeys().isEmpty()) {
             searchRequestBuilder.setRouting(
                     searchRequest.getRoutingKeys()
                             .toArray(new String[(searchRequest.getRoutingKeys().size())])
             );
         }
-        if (!query.getSorters().isEmpty() && !Objects.isNull(query.getSorters())) {
+        if (!Objects.isNull(query.getSorters()) && !query.getSorters().isEmpty()) {
             queryManager.getSortBuilders(query).forEach(searchRequestBuilder::addSort);
         }
 
