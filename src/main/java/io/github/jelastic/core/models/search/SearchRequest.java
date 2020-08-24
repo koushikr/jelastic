@@ -22,6 +22,7 @@ import javax.validation.constraints.NotNull;
 
 /**
  * @author koushik
+ * @deprecated  as of 7.2.0-4, replaced by {@link JElasticSearchRequest}
  */
 @AllArgsConstructor
 @NoArgsConstructor

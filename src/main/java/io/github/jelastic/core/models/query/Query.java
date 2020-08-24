@@ -29,6 +29,7 @@ import java.util.TreeSet;
 
 /**
  * Created by koushikr
+ * @deprecated as of 7.2.0-4, replaced by {@link JElasticQuery}
  */
 @Getter
 @Setter

@@ -62,6 +62,7 @@ import javax.inject.Singleton;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -272,6 +273,7 @@ public class ElasticRepository implements Closeable {
      * @param <T> Response class Type
      * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
      * @return List<T> list of objects that meet searchCriteria
+     * @deprecated as of 7.2.0-4, replaced by {@link #enumeratedSearch(JElasticSearchRequest)}
      */
     @Deprecated
     public <T> List<T> search(SearchRequest<T> searchRequest) {
@@ -315,13 +317,14 @@ public class ElasticRepository implements Closeable {
         SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
                 .prepareSearch(searchRequest.getIndex())
                 .setQuery(queryBuilder);
-        if (searchRequest.getRoutingKeys() != null) {
-            searchRequestBuilder.setRouting(searchRequest.getRoutingKeys().toArray(new String[(searchRequest.getRoutingKeys().size())]));
+        if (!searchRequest.getRoutingKeys().isEmpty() && !Objects.isNull(searchRequest.getRoutingKeys())) {
+            searchRequestBuilder.setRouting(
+                    searchRequest.getRoutingKeys()
+                            .toArray(new String[(searchRequest.getRoutingKeys().size())])
+            );
         }
-        if (!query.getSorters().isEmpty()) {
-            query.getSorters().forEach(sorter -> searchRequestBuilder.addSort(
-                    sorter.accept(new ElasticSortBuilder())
-            ));
+        if (!query.getSorters().isEmpty() && !Objects.isNull(query.getSorters())) {
+            queryManager.getSortBuilders(query).forEach(searchRequestBuilder::addSort);
         }
 
         SearchResponse searchResponse = searchRequestBuilder
@@ -364,7 +367,7 @@ public class ElasticRepository implements Closeable {
 
   /**
    * Method to delete a document based on reference id
-   * @param deleteEntityRequest
+   * @param deleteEntityRequest deleteEntityRequest
    */
   public void delete(DeleteEntityRequest deleteEntityRequest) {
         validate(deleteEntityRequest);
@@ -375,8 +378,8 @@ public class ElasticRepository implements Closeable {
                 deleteEntityRequest.getMappingType(),
                 deleteEntityRequest.getReferenceId()
                 );
-        if (deleteEntityRequest.getRoutingKey() !=null)  deleteRequestBuilder.setRouting(deleteEntityRequest.getRoutingKey());
-        DeleteResponse deleteResponse = deleteRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+        deleteRequestBuilder.setRouting(deleteEntityRequest.getRoutingKey());
+        deleteRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
                 .execute().actionGet();
     }
 

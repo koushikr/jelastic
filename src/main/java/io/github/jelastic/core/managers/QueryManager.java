@@ -16,14 +16,19 @@
 package io.github.jelastic.core.managers;
 
 import io.github.jelastic.core.elastic.ElasticQueryBuilder;
+import io.github.jelastic.core.elastic.ElasticSortBuilder;
 import io.github.jelastic.core.exception.InvalidQueryException;
 import io.github.jelastic.core.models.query.JElasticQuery;
 import io.github.jelastic.core.models.query.Query;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.sort.SortBuilder;
 
 import javax.inject.Singleton;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 
@@ -36,8 +41,11 @@ public class QueryManager {
 
     private ElasticQueryBuilder elasticQueryBuilder;
 
+    private ElasticSortBuilder elasticSortBuilder;
+
     public QueryManager() {
         this.elasticQueryBuilder = new ElasticQueryBuilder();
+        this.elasticSortBuilder = new ElasticSortBuilder();
     }
 
     @Deprecated
@@ -53,7 +61,7 @@ public class QueryManager {
         return boolQueryBuilder;
     }
 
-    public QueryBuilder getQueryBuilder(JElasticQuery query){
+    public QueryBuilder getQueryBuilder(JElasticQuery query) {
         BoolQueryBuilder boolQueryBuilder = boolQuery();
 
         try {
@@ -62,6 +70,12 @@ public class QueryManager {
             throw new InvalidQueryException("Query incorrect: " + e.getMessage(), e);
         }
         return boolQueryBuilder;
+
+    }
+
+    public List<SortBuilder> getSortBuilders(JElasticQuery query) {
+        return  query.getSorters().stream().map(sorter ->
+                sorter.accept(elasticSortBuilder)).collect(Collectors.toList());
 
     }
 
