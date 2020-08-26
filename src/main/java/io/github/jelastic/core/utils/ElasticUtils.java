@@ -84,6 +84,10 @@ public interface ElasticUtils {
         if (!Objects.isNull(createTemplateRequest.getAnalysis())) {
             settings.put(ElasticProperties.ANALYSIS, createTemplateRequest.getAnalysis());
         }
+        if (!Objects.isNull(createTemplateRequest.getIndexProperties().getNoOfRoutingShards())) {
+            settings.put(ElasticProperties.NO_OF_ROUTING_SHARDS,
+                    createTemplateRequest.getIndexProperties().getNoOfRoutingShards());
+        }
         return settings;
     }
 
@@ -92,5 +96,6 @@ public interface ElasticUtils {
         String NO_OF_REPLICAS = "number_of_replicas";
         String INDEX_REQUEST_CACHE = "index.requests.cache.enable";
         String ANALYSIS = "analysis";
+        String NO_OF_ROUTING_SHARDS = "number_of_routing_shards";
     }
 }
