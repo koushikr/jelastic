@@ -6,7 +6,7 @@
 > So you can be 'fantastic' or 'elastic' but can you ever be both lol??
 > - by Amber J.
 
-JElastic is for using elasticsearch within application paradigm without setting your hair on fire about the internal client details.
+JElastic is for using elasticsearch within application paradigm without setting your hair on fire about the internal client details. And oh, it is a dropwizard bundle! 
 
 ### Build instructions
   - Clone the source:
