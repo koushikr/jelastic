@@ -39,4 +39,6 @@ public class UpdateFieldRequest {
     @NotNull
     private Map<String, Object> fieldValueMap;
     private int retryCount;
+    private String routingKey;
+
 }

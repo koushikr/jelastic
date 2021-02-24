@@ -25,9 +25,11 @@ import javax.validation.constraints.Min;
 
 /**
  * Created by koushikr
+ * @deprecated as of 7.2.0-5, replaced by {@link JElasticSorter}
  */
 @Data
 @Builder
+@Deprecated
 public class Sorter implements Comparable<Sorter> {
 
     @Min(1)

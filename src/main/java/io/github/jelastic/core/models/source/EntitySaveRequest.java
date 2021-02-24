@@ -35,5 +35,6 @@ public class EntitySaveRequest {
     private String referenceId;
     @NotNull
     private String value;
+    private String routingKey;
 
 }

@@ -37,4 +37,6 @@ public class UpdateEntityRequest {
 
     @NotNull
     private String value;
+    private String routingKey;
+
 }

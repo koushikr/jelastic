@@ -36,6 +36,8 @@ public interface FilterType {
     String EXISTS = "EXISTS";
     String MISSING = "MISSING";
     String CONTAINS = "CONTAINS";
+    String CONSTANT_SCORE = "CONSTANT_SCORE";
+    String MATCH = "MATCH";
 
     /* Predicates */
     String AND = "AND";

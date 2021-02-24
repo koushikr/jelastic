@@ -19,17 +19,21 @@ import com.google.common.collect.Lists;
 import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.exception.JelasticException;
+import io.github.jelastic.core.elastic.ElasticSortBuilder;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
 import io.github.jelastic.core.models.query.Query;
 import io.github.jelastic.core.models.query.paged.PageWindow;
 import io.github.jelastic.core.models.search.IdSearchRequest;
+import io.github.jelastic.core.models.search.JElasticSearchRequest;
+import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.search.SearchRequest;
 import io.github.jelastic.core.models.source.EntitySaveRequest;
 import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.source.UpdateEntityRequest;
 import io.github.jelastic.core.models.source.UpdateFieldRequest;
+import io.github.jelastic.core.models.source.DeleteEntityRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import io.github.jelastic.core.utils.ElasticUtils;
 import io.github.jelastic.core.utils.MapperUtils;
@@ -43,6 +47,8 @@ import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -67,6 +73,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -203,6 +210,8 @@ public class ElasticRepository implements Closeable {
                         entitySaveRequest.getReferenceId()
                 )
                 .setSource(entitySaveRequest.getValue(), XContentType.JSON);
+        indexRequestBuilder.setRouting(entitySaveRequest.getRoutingKey());
+
         indexRequestBuilder.setRefreshPolicy(
                 WriteRequest.RefreshPolicy.IMMEDIATE
         ).execute().actionGet();
@@ -218,6 +227,7 @@ public class ElasticRepository implements Closeable {
                         updateEntityRequest.getReferenceId()
                 )
                 .setDoc(updateEntityRequest.getValue(), XContentType.JSON);
+        updateRequestBuilder.setRouting(updateEntityRequest.getRoutingKey());
         updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().actionGet();
     }
 
@@ -228,6 +238,7 @@ public class ElasticRepository implements Closeable {
                 updateFieldRequest.getIndexName(),
                 updateFieldRequest.getReferenceId()
         ).retryOnConflict(updateFieldRequest.getRetryCount())
+                .routing(updateFieldRequest.getRoutingKey())
             .doc(
                 MapperUtils.writeValueAsString(updateFieldRequest.getFieldValueMap()),
                 XContentType.JSON
@@ -275,7 +286,9 @@ public class ElasticRepository implements Closeable {
      * @param <T> Response class Type
      * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
      * @return List<T> list of objects that meet searchCriteria
+     * @deprecated as of 7.2.0-5, replaced by {@link #enumeratedSearch(JElasticSearchRequest)}
      */
+    @Deprecated
     public <T> List<T> search(SearchRequest<T> searchRequest) {
         validate(searchRequest);
         val query = searchRequest.getQuery();
@@ -300,6 +313,42 @@ public class ElasticRepository implements Closeable {
 
         return ElasticUtils.getResponse(searchResponse, searchRequest.getKlass());
     }
+
+    /**
+     * Search elasticSearch based on the search query passed.
+     *
+     * @param searchRequest searchRequest
+     * @param <T> Response class Type
+     * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
+     * @return JElasticSearchResponse<T> list of objects that meet searchCriteria
+     */
+    public <T> JElasticSearchResponse<T> enumeratedSearch(JElasticSearchRequest<T> searchRequest) {
+        validate(searchRequest);
+        val query = searchRequest.getQuery();
+        QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
+
+        SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
+                .prepareSearch(searchRequest.getIndex())
+                .setQuery(queryBuilder);
+        if (!Objects.isNull(searchRequest.getRoutingKeys()) && !searchRequest.getRoutingKeys().isEmpty()) {
+            searchRequestBuilder.setRouting(
+                    searchRequest.getRoutingKeys()
+                            .toArray(new String[(searchRequest.getRoutingKeys().size())])
+            );
+        }
+        if (!Objects.isNull(query.getSorters()) && !query.getSorters().isEmpty()) {
+            queryManager.getSortBuilders(query).forEach(searchRequestBuilder::addSort);
+        }
+
+        SearchResponse searchResponse = searchRequestBuilder
+                .setFrom(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
+                .setSize(query.getPageWindow().getPageSize())
+                .execute()
+                .actionGet();
+
+        return ElasticUtils.getSearchResponse(searchResponse, searchRequest.getKlass());
+    }
+
 
     public <T> List<T> search(String index, QueryBuilder queryBuilder,
                                     PageWindow pageWindow, Class<T> klass) {
@@ -378,6 +427,24 @@ public class ElasticRepository implements Closeable {
 
         }
         return totalResult;
+    }
+
+  /**
+   * Method to delete a document based on reference id
+   * @param deleteEntityRequest deleteEntityRequest
+   */
+  public void delete(DeleteEntityRequest deleteEntityRequest) {
+        validate(deleteEntityRequest);
+
+        DeleteRequestBuilder deleteRequestBuilder = elasticClient.getClient()
+                .prepareDelete(
+                deleteEntityRequest.getIndexName(),
+                deleteEntityRequest.getMappingType(),
+                deleteEntityRequest.getReferenceId()
+                );
+        deleteRequestBuilder.setRouting(deleteEntityRequest.getRoutingKey());
+        deleteRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
+                .execute().actionGet();
     }
 
     @Override

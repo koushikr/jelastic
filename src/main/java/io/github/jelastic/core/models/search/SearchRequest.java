@@ -22,12 +22,14 @@ import javax.validation.constraints.NotNull;
 
 /**
  * @author koushik
+ * @deprecated  as of 7.2.0-5, replaced by {@link JElasticSearchRequest}
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
+@Deprecated
 public class SearchRequest<T> {
     @NotNull
     private String index;

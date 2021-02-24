@@ -34,4 +34,6 @@ public class IndexProperties {
     private int noOfReplicas;
 
     private boolean enableRequestCache;
+
+    private Integer noOfRoutingShards;
 }

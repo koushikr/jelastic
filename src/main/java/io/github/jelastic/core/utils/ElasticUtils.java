@@ -15,6 +15,7 @@
  */
 package io.github.jelastic.core.utils;
 
+import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import lombok.val;
@@ -48,6 +49,17 @@ public interface ElasticUtils {
                 }).collect(Collectors.toList());
     }
 
+    static <T> JElasticSearchResponse<T> getSearchResponse(SearchResponse response, Class<T> klass) {
+        return JElasticSearchResponse.<T>builder()
+                .count(response.getHits().getTotalHits().value)
+                .entities(Arrays.stream(response.getHits().getHits())
+                        .map(hit -> {
+                            final Map<String, Object> result = hit.getSourceAsMap();
+                            return MapperUtils.mapper().convertValue(result, klass);
+                        }).collect(Collectors.toList()))
+                .build();
+    }
+
     static <T> List<T> getResponse(MultiGetResponse multiGetItemResponses, Class<T> klass) {
         return Arrays.stream(multiGetItemResponses.getResponses())
                 .map(hit -> {
@@ -72,6 +84,10 @@ public interface ElasticUtils {
         if (!Objects.isNull(createTemplateRequest.getAnalysis())) {
             settings.put(ElasticProperties.ANALYSIS, createTemplateRequest.getAnalysis());
         }
+        if (!Objects.isNull(createTemplateRequest.getIndexProperties().getNoOfRoutingShards())) {
+            settings.put(ElasticProperties.NO_OF_ROUTING_SHARDS,
+                    createTemplateRequest.getIndexProperties().getNoOfRoutingShards());
+        }
         return settings;
     }
 
@@ -80,5 +96,6 @@ public interface ElasticUtils {
         String NO_OF_REPLICAS = "number_of_replicas";
         String INDEX_REQUEST_CACHE = "index.requests.cache.enable";
         String ANALYSIS = "analysis";
+        String NO_OF_ROUTING_SHARDS = "number_of_routing_shards";
     }
 }
