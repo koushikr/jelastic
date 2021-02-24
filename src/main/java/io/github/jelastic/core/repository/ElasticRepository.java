@@ -88,7 +88,6 @@ public class ElasticRepository implements Closeable {
 
     private final ElasticClient elasticClient;
     private final QueryManager queryManager;
-    private final JElasticConfiguration JElasticConfiguration;
 
     public IndexTemplateMetaData getTemplate(@NotEmpty String templateName) {
         GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest().names(templateName);
@@ -392,14 +391,14 @@ public class ElasticRepository implements Closeable {
      * @return List<T> list of all objects in that index
      */
     public <T> List<T> loadAll(String index, Query query, int batchSize, int fetchSize, Class<T> klass) {
-        final int maxResultSize = JElasticConfiguration.getMaxResultSize();
+        val maxResultSize = elasticClient.getJElasticConfiguration().getMaxResultSize();
 
         if(fetchSize > maxResultSize){
             log.error("Result size exceeds configured limit of {}, Please try changing it.", maxResultSize);
             throw new JelasticException("Result size exceeds configured limit.");
         }
 
-        final Scroll scroll = new Scroll(TimeValue.timeValueMinutes(1L));
+        val scroll = new Scroll(TimeValue.timeValueMinutes(1L));
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
         SearchRequestBuilder searchRequestBuilder = elasticClient
                 .getClient()
@@ -414,7 +413,6 @@ public class ElasticRepository implements Closeable {
         String scrollId = searchResponse.getScrollId();
         List<T> batchedResult = ElasticUtils.getResponse(searchResponse, klass);
         List<T> totalResult = new ArrayList<>(batchedResult);
-        int count = 1;
         while (!batchedResult.isEmpty()) {
             SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
             scrollRequest.scroll(scroll);
