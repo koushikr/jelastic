@@ -6,7 +6,7 @@
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
     <packaging>jar</packaging>
-    <version>7.2.0-5</version>
+    <version>7.2.0-6</version>
 
     <licenses>
         <license>

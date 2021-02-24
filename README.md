@@ -77,8 +77,7 @@ Use the following maven dependency
 ### Version support
 | jelastic               |  es transport client|
 | -----------------------| ------------------- |
-| 7.2.0-5                |  7.2.0               |
-| 7.2.0-4               |  7.2.0               |
+| 7.2.0-6                |  7.2.0               |
 
 ### Configuration
 ```yaml
