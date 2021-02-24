@@ -379,15 +379,14 @@ public class ElasticRepository implements Closeable {
      * @param index Index to be loaded
      * @param query jelastic query object
      * @param batchSize Will tell ElasticClient the size of each fetch, should be <= 10000 for better performance
-     * @param fetchSize The desired result size
      * @return List<T> list of all objects in that index
      */
-    public <T> List<T> loadAll(String index, Query query, int batchSize, int fetchSize, Class<T> klass) {
+    public <T> List<T> loadAll(String index, Query query, int batchSize, Class<T> klass) {
         val maxResultSize = elasticClient.getJElasticConfiguration().getMaxResultSize();
 
-        if(fetchSize > maxResultSize){
+        if(batchSize > maxResultSize){
             log.error("Result size exceeds configured limit of {}, Please try changing it.", maxResultSize);
-            throw new JelasticException("Result size exceeds configured limit.");
+            throw new JelasticException(String.format("Result size exceeds configured limit : %d", maxResultSize));
         }
 
         val scroll = new Scroll(TimeValue.timeValueMinutes(1L));
@@ -405,7 +404,7 @@ public class ElasticRepository implements Closeable {
         String scrollId = searchResponse.getScrollId();
         List<T> batchedResult = ElasticUtils.getResponse(searchResponse, klass);
         List<T> totalResult = new ArrayList<>(batchedResult);
-        while (!batchedResult.isEmpty()) {
+        while (batchedResult.size() == batchSize) {
             SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
             scrollRequest.scroll(scroll);
             searchResponse = elasticClient
