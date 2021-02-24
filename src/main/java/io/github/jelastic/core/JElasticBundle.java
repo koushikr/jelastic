@@ -30,6 +30,7 @@ import io.github.jelastic.core.repository.ElasticRepository;
 import io.github.jelastic.core.utils.MapperUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.val;
 
 /**
  * @author koushik
@@ -61,11 +62,11 @@ public abstract class JElasticBundle<T extends Configuration> implements Configu
 
         MapperUtils.init(environment.getObjectMapper());
 
-        JElasticConfiguration JElasticConfiguration = getElasticConfiguration(configuration);
-        client = new ElasticClient(JElasticConfiguration);
-        repository = new ElasticRepository(client, new QueryManager(), JElasticConfiguration);
+        val jElasticConfiguration = getElasticConfiguration(configuration);
+        client = new ElasticClient(getElasticConfiguration(configuration));
+        repository = new ElasticRepository(client, new QueryManager());
 
-        environment.healthChecks().register("jelastic-health-check", new EsClientHealth(client, JElasticConfiguration));
+        environment.healthChecks().register("jelastic-health-check", new EsClientHealth(client, jElasticConfiguration));
     }
 
     @Override

@@ -29,11 +29,11 @@ import org.elasticsearch.cluster.health.ClusterHealthStatus;
 public class EsClientHealth extends HealthCheck {
 
     private final ElasticClient elasticClient;
-    private final JElasticConfiguration JElasticConfiguration;
+    private final JElasticConfiguration jElasticConfiguration;
 
-    public EsClientHealth(ElasticClient elasticClient, JElasticConfiguration JElasticConfiguration) {
+    public EsClientHealth(ElasticClient elasticClient, JElasticConfiguration jElasticConfiguration) {
         this.elasticClient = elasticClient;
-        this.JElasticConfiguration = JElasticConfiguration;
+        this.jElasticConfiguration = jElasticConfiguration;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class EsClientHealth extends HealthCheck {
         final ClusterHealthStatus status = elasticClient.getClient().admin().cluster().prepareHealth()
                 .get().getStatus();
 
-        if (status == ClusterHealthStatus.RED || (JElasticConfiguration.isFailOnYellow()
+        if (status == ClusterHealthStatus.RED || (jElasticConfiguration.isFailOnYellow()
                 && status == ClusterHealthStatus.YELLOW)) {
             return Result.unhealthy("Last status: %s", status.name());
         } else {
