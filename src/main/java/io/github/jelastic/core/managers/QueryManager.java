@@ -26,7 +26,6 @@ import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.sort.SortBuilder;
 
 import javax.inject.Singleton;
-
 import java.util.List;
 import java.util.stream.Collectors;
 

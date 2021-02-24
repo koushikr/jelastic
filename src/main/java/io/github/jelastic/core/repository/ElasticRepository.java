@@ -16,10 +16,8 @@
 package io.github.jelastic.core.repository;
 
 import com.google.common.collect.Lists;
-import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.exception.JelasticException;
-import io.github.jelastic.core.elastic.ElasticSortBuilder;
 import io.github.jelastic.core.exception.JsonMappingException;
 import io.github.jelastic.core.managers.QueryManager;
 import io.github.jelastic.core.models.mapping.CreateMappingRequest;
@@ -29,11 +27,7 @@ import io.github.jelastic.core.models.search.IdSearchRequest;
 import io.github.jelastic.core.models.search.JElasticSearchRequest;
 import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.search.SearchRequest;
-import io.github.jelastic.core.models.source.EntitySaveRequest;
-import io.github.jelastic.core.models.source.GetSourceRequest;
-import io.github.jelastic.core.models.source.UpdateEntityRequest;
-import io.github.jelastic.core.models.source.UpdateFieldRequest;
-import io.github.jelastic.core.models.source.DeleteEntityRequest;
+import io.github.jelastic.core.models.source.*;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import io.github.jelastic.core.utils.ElasticUtils;
 import io.github.jelastic.core.utils.MapperUtils;
@@ -48,7 +42,6 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
-import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -75,7 +68,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Created by koushikr
