@@ -36,38 +36,44 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
-import org.elasticsearch.action.admin.indices.alias.get.GetAliasesResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-import org.elasticsearch.action.admin.indices.template.get.GetIndexTemplatesRequest;
-import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequest;
+
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
+import org.elasticsearch.action.get.MultiGetRequest;
 import org.elasticsearch.action.get.MultiGetResponse;
+
+import org.elasticsearch.action.index.IndexRequest;
+
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
+import org.elasticsearch.client.GetAliasesResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.indices.*;
+import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
-import org.elasticsearch.cluster.metadata.IndexTemplateMetaData;
 import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.Scroll;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.inject.Singleton;
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Created by koushikr
@@ -82,11 +88,17 @@ public class ElasticRepository implements Closeable {
     private final QueryManager queryManager;
 
     public IndexTemplateMetaData getTemplate(@NotEmpty String templateName) {
-        GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest().names(templateName);
-        val getIndexTemplatesResponse = elasticClient.getClient().admin()
-                .indices().getTemplates(getRequest).actionGet();
-        return getIndexTemplatesResponse.getIndexTemplates().isEmpty() ?
-                null : getIndexTemplatesResponse.getIndexTemplates().get(0);
+        GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest(templateName);
+
+        try {
+            val getIndexTemplatesResponse = elasticClient.getClient().
+                    indices().getIndexTemplate(getRequest, RequestOptions.DEFAULT);
+            return getIndexTemplatesResponse.getIndexTemplates().isEmpty() ?
+                    null : getIndexTemplatesResponse.getIndexTemplates().get(0);
+        } catch (IOException e) {
+            throw new JelasticException("Unable to get Template", e);
+        }
+
     }
 
     /**
@@ -103,51 +115,56 @@ public class ElasticRepository implements Closeable {
     public void createMapping(CreateMappingRequest mappingRequest) {
         validate(mappingRequest);
 
-        elasticClient.getClient()
-                .admin()
-                .indices()
-                .preparePutMapping(mappingRequest.getIndexName())
-                .setType(mappingRequest.getMappingType())
-                .setSource(mappingRequest.getMappingSource())
-                .execute()
-                .actionGet();
+
+        PutMappingRequest request = new PutMappingRequest(mappingRequest.getIndexName())
+                .source(mappingRequest.getMappingSource());
+
+        try {
+            elasticClient.getClient()
+                    .indices()
+                    .putMapping(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Creating mapping", e);
+        }
+
     }
 
     public void createTemplate(CreateTemplateRequest createTemplateRequest) {
         validate(createTemplateRequest);
 
-        val mapping = new PutIndexTemplateRequest()
-                .name(createTemplateRequest.getTemplateName())
+        val mapping = new PutIndexTemplateRequest(createTemplateRequest.getTemplateName())
                 .patterns(
                         Lists.newArrayList(
                                 "*" + createTemplateRequest.getIndexPattern() + "*"
                         )
                 )
                 .settings(ElasticUtils.getSettings(createTemplateRequest))
-                .mapping(
-                        createTemplateRequest.getMappingType(),
-                        createTemplateRequest.getMappingSource()
-                );
-        elasticClient.getClient().admin().indices().putTemplate(mapping).actionGet();
+                .mapping(createTemplateRequest.getMappingSource()); // removed mapping type as that support is not provided anymore.
+        try {
+            elasticClient.getClient().indices().putTemplate(mapping, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Could not put template", e);
+        }
     }
 
     public void createIndex(@NotEmpty String indexName) {
-        if (!elasticClient.getClient().admin().indices().prepareExists(indexName).execute().actionGet()
-                .isExists()) {
-            elasticClient.getClient()
-                    .admin()
-                    .indices()
-                    .prepareCreate(indexName)
-                    .execute()
-                    .actionGet();
 
-            elasticClient.getClient()
-                    .admin()
-                    .cluster()
-                    .prepareHealth(indexName)
-                    .setWaitForGreenStatus()
-                    .execute()
-                    .actionGet();
+        if (!isExistsIndex(indexName)) {
+            try {
+                elasticClient.getClient()
+                        .indices()
+                        .create(new CreateIndexRequest(indexName),RequestOptions.DEFAULT);
+
+                elasticClient.getClient()
+                        .cluster()
+                        .health(new ClusterHealthRequest(indexName)
+                                    .waitForStatus(ClusterHealthStatus.GREEN),
+                                RequestOptions.DEFAULT);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
         }
     }
 
@@ -162,8 +179,14 @@ public class ElasticRepository implements Closeable {
     public <T> Optional<T> get(GetSourceRequest<T> getSourceRequest) {
         validate(getSourceRequest);
 
-        GetResponse getResponse = elasticClient.getClient()
-                .get(ElasticUtils.getRequest(getSourceRequest)).actionGet();
+
+        GetResponse getResponse = null;
+        try {
+            getResponse = elasticClient.getClient()
+                    .get(ElasticUtils.getRequest(getSourceRequest), RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Getting document",e);
+        }
         try{
             return Optional.ofNullable(
                     getResponse.isExists() ?
@@ -185,41 +208,49 @@ public class ElasticRepository implements Closeable {
     public void save(EntitySaveRequest entitySaveRequest) {
         validate(entitySaveRequest);
 
-        if (!elasticClient.getClient().admin()
-                .indices()
-                .prepareExists(entitySaveRequest.getIndexName())
-                .execute()
-                .actionGet()
-                .isExists()
-                ) {
+
+        boolean exists = isExistsIndex(entitySaveRequest.getIndexName());
+        if (!exists) {
             throw new IndexNotFoundException("Index, " + entitySaveRequest.getIndexName() + " doesn't exist.");
         }
-        val indexRequestBuilder = elasticClient.getClient()
-                .prepareIndex(
-                        entitySaveRequest.getIndexName(),
-                        entitySaveRequest.getMappingType(),
-                        entitySaveRequest.getReferenceId()
-                )
-                .setSource(entitySaveRequest.getValue(), XContentType.JSON);
-        indexRequestBuilder.setRouting(entitySaveRequest.getRoutingKey());
 
-        indexRequestBuilder.setRefreshPolicy(
-                WriteRequest.RefreshPolicy.IMMEDIATE
-        ).execute().actionGet();
+        IndexRequest request = new IndexRequest(entitySaveRequest.getIndexName())
+                .type(entitySaveRequest.getMappingType())
+                .id(entitySaveRequest.getReferenceId())
+                .source(entitySaveRequest.getValue())
+                .routing(entitySaveRequest.getRoutingKey())
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+        try {
+            val indexRequestBuilder = elasticClient.getClient()
+                    .index(request,RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Failed to save data", e);
+        }
+    }
+
+    private boolean isExistsIndex(String indexName) {
+        try {
+            return elasticClient.getClient()
+                    .indices()
+                    .exists(new GetIndexRequest(indexName), RequestOptions.DEFAULT);
+        } catch (Exception e) {
+            throw new JelasticException("Failed to check if Index exists", e);
+        }
     }
 
     public void update(UpdateEntityRequest updateEntityRequest) {
         validate(updateEntityRequest);
 
-        UpdateRequestBuilder updateRequestBuilder = elasticClient.getClient()
-                .prepareUpdate(
-                        updateEntityRequest.getIndexName(),
-                        updateEntityRequest.getMappingType(),
-                        updateEntityRequest.getReferenceId()
-                )
-                .setDoc(updateEntityRequest.getValue(), XContentType.JSON);
-        updateRequestBuilder.setRouting(updateEntityRequest.getRoutingKey());
-        updateRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE).execute().actionGet();
+        UpdateRequest updateRequest = new UpdateRequest(updateEntityRequest.getIndexName(), updateEntityRequest.getReferenceId())
+                .doc(updateEntityRequest.getValue())
+                .routing(updateEntityRequest.getRoutingKey())
+                .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+        try {
+            elasticClient.getClient()
+                    .update(updateRequest,RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error updating the request", e);
+        }
     }
 
     public void updateField(UpdateFieldRequest updateFieldRequest) {
@@ -234,40 +265,44 @@ public class ElasticRepository implements Closeable {
                 MapperUtils.writeValueAsString(updateFieldRequest.getFieldValueMap()),
                 XContentType.JSON
             );
-        elasticClient.getClient().update(updateRequest).actionGet();
+        try {
+            elasticClient.getClient().update(updateRequest,RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Updating Field.",e);
+        }
     }
 
     public void reAlias(@NotEmpty  String newIndex, @NotEmpty String aliasName) {
-        GetAliasesResponse var = elasticClient.getClient().admin().indices()
-                .getAliases(new GetAliasesRequest(aliasName)).actionGet();
-        ImmutableOpenMap<String, List<AliasMetaData>> aliases = var.getAliases();
+        GetAliasesResponse var = null;
+        try {
+            var = elasticClient.getClient().indices()
+                    .getAlias(new GetAliasesRequest(aliasName), RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Getting alias", e);
+        }
+        Map<String, Set<AliasMetaData>> aliases = var.getAliases();
 
+        IndicesAliasesRequest request = new IndicesAliasesRequest();
         if (aliases.isEmpty()) {
-            elasticClient.getClient()
-                    .admin()
-                    .indices()
-                    .prepareAliases()
-                    .addAlias(newIndex, aliasName)
-                    .execute()
-                    .actionGet();
+            request.addAliasAction(new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD).alias(aliasName).index(newIndex));
         }
 
-        String oldIndex = aliases.keysIt().next();
+        String oldIndex = aliases.keySet().iterator().next();
         if (oldIndex.equalsIgnoreCase(newIndex)) return;
 
+        request.addAliasAction(new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.ADD).alias(aliasName).index(newIndex));
+        request.addAliasAction(new IndicesAliasesRequest.AliasActions(IndicesAliasesRequest.AliasActions.Type.REMOVE).alias(aliasName).index(oldIndex));
+        try {
         elasticClient.getClient()
-                .admin()
                 .indices()
-                .prepareAliases()
-                .removeAlias(oldIndex, aliasName)
-                .addAlias(newIndex, aliasName)
-                .execute()
-                .actionGet();
-        elasticClient.getClient()
-                .admin()
-                .indices()
-                .delete(new DeleteIndexRequest(oldIndex))
-                .actionGet();
+                .updateAliases(request, RequestOptions.DEFAULT);
+
+            elasticClient.getClient()
+                    .indices()
+                    .delete(new DeleteIndexRequest(oldIndex), RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Performing request", e);
+        }
     }
 
     /**
@@ -285,22 +320,27 @@ public class ElasticRepository implements Closeable {
         val query = searchRequest.getQuery();
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
 
-        SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
-                .prepareSearch(searchRequest.getIndex())
-                .setQuery(queryBuilder);
+        org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(searchRequest.getIndex());
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
 
         if (!query.getSorters().isEmpty()) {
-            query.getSorters().forEach(sorter -> searchRequestBuilder.addSort(
+            query.getSorters().forEach(sorter -> searchSourceBuilder.sort(
                     SortBuilders.fieldSort(sorter.getFieldName())
                             .order(ElasticUtils.getSortOrder(sorter.getSortOrder()))
             ));
         }
 
-        SearchResponse searchResponse = searchRequestBuilder
-                .setFrom(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
-                .setSize(query.getPageWindow().getPageSize())
-                .execute()
-                .actionGet();
+        searchSourceBuilder
+                .from(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
+                .size(query.getPageWindow().getPageSize());
+
+        request.source(searchSourceBuilder);
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Searching the results", e);
+        }
 
         return ElasticUtils.getResponse(searchResponse, searchRequest.getKlass());
     }
@@ -318,24 +358,30 @@ public class ElasticRepository implements Closeable {
         val query = searchRequest.getQuery();
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
 
-        SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
-                .prepareSearch(searchRequest.getIndex())
-                .setQuery(queryBuilder);
+        org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(searchRequest.getIndex());
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
+
+
         if (!Objects.isNull(searchRequest.getRoutingKeys()) && !searchRequest.getRoutingKeys().isEmpty()) {
-            searchRequestBuilder.setRouting(
-                    searchRequest.getRoutingKeys()
-                            .toArray(new String[(searchRequest.getRoutingKeys().size())])
-            );
+            request.routing(searchRequest.getRoutingKeys()
+                            .toArray(new String[(searchRequest.getRoutingKeys().size())]));
         }
         if (!Objects.isNull(query.getSorters()) && !query.getSorters().isEmpty()) {
-            queryManager.getSortBuilders(query).forEach(searchRequestBuilder::addSort);
+            queryManager.getSortBuilders(query).forEach(searchSourceBuilder::sort);
         }
 
-        SearchResponse searchResponse = searchRequestBuilder
-                .setFrom(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
-                .setSize(query.getPageWindow().getPageSize())
-                .execute()
-                .actionGet();
+        searchSourceBuilder
+                .from(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
+                .size(query.getPageWindow().getPageSize());
+
+
+        request.source(searchSourceBuilder);
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Searching the results", e);
+        }
 
         return ElasticUtils.getSearchResponse(searchResponse, searchRequest.getKlass());
     }
@@ -344,27 +390,39 @@ public class ElasticRepository implements Closeable {
     public <T> List<T> search(String index, QueryBuilder queryBuilder,
                                     PageWindow pageWindow, Class<T> klass) {
 
-        SearchRequestBuilder searchRequestBuilder = elasticClient.getClient()
-                .prepareSearch(index)
-                .setQuery(queryBuilder);
+        org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(index);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
 
-        SearchResponse searchResponse = searchRequestBuilder
-                .setFrom(pageWindow.getPageNumber() * pageWindow.getPageSize())
-                .setSize(pageWindow.getPageSize())
-                .execute()
-                .actionGet();
+        searchSourceBuilder
+                .from(pageWindow.getPageNumber() * pageWindow.getPageSize())
+                .size(pageWindow.getPageSize());
+
+        request.source(searchSourceBuilder);
+        SearchResponse searchResponse = null;
+        try {
+            searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error Searching the results", e);
+        }
+
 
         return ElasticUtils.getResponse(searchResponse, klass);
     }
 
     public <T> List<T> searchByIds(IdSearchRequest<T> idSearchRequest) {
         validate(idSearchRequest);
+        MultiGetRequest request = new MultiGetRequest();
+        idSearchRequest.getIds().forEach(id -> {
+            request.add(new MultiGetRequest.Item(idSearchRequest.getIndex(), idSearchRequest.getType(), id));
+        });
 
-        MultiGetResponse multiGetItemResponses = elasticClient.getClient().prepareMultiGet().add(
-                idSearchRequest.getIndex(),
-                idSearchRequest.getType(),
-                idSearchRequest.getIds()
-        ).get();
+
+        MultiGetResponse multiGetItemResponses = null;
+        try {
+            multiGetItemResponses = elasticClient.getClient().mget(request, RequestOptions.DEFAULT);
+        } catch (IOException e) {
+            throw new JelasticException("Error performing MGET operation", e);
+        }
 
         return ElasticUtils.getResponse(multiGetItemResponses, idSearchRequest.getKlass());
     }
@@ -391,31 +449,35 @@ public class ElasticRepository implements Closeable {
 
         val scroll = new Scroll(TimeValue.timeValueMinutes(1L));
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
-        SearchRequestBuilder searchRequestBuilder = elasticClient
-                .getClient()
-                .prepareSearch(index)
-                .setQuery(queryBuilder)
-                .setSize(batchSize)
-                .setScroll(scroll);
-        SearchResponse searchResponse = searchRequestBuilder
-                .execute()
-                .actionGet();
 
-        String scrollId = searchResponse.getScrollId();
-        List<T> batchedResult = ElasticUtils.getResponse(searchResponse, klass);
-        List<T> totalResult = new ArrayList<>(batchedResult);
-        while (batchedResult.size() == batchSize) {
-            SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
-            scrollRequest.scroll(scroll);
-            searchResponse = elasticClient
-                    .getClient()
-                    .searchScroll(scrollRequest)
-                    .actionGet();
-            batchedResult = ElasticUtils.getResponse(searchResponse, klass);
-            totalResult.addAll(batchedResult);
+        org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(index);
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
+        searchSourceBuilder.size(batchSize);
 
+        request.source(searchSourceBuilder)
+                .scroll(scroll);
+
+        try {
+            SearchResponse searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
+
+            String scrollId = searchResponse.getScrollId();
+            List<T> batchedResult = ElasticUtils.getResponse(searchResponse, klass);
+            List<T> totalResult = new ArrayList<>(batchedResult);
+            while (batchedResult.size() == batchSize) {
+                SearchScrollRequest scrollRequest = new SearchScrollRequest(scrollId);
+                scrollRequest.scroll(scroll);
+                searchResponse = elasticClient
+                        .getClient()
+                        .scroll(scrollRequest, RequestOptions.DEFAULT);
+                batchedResult = ElasticUtils.getResponse(searchResponse, klass);
+                totalResult.addAll(batchedResult);
+
+            }
+            return totalResult;
+        } catch (IOException e){
+            throw new JelasticException("Error processing request!!", e);
         }
-        return totalResult;
+
     }
 
   /**
@@ -425,16 +487,16 @@ public class ElasticRepository implements Closeable {
   public void delete(DeleteEntityRequest deleteEntityRequest) {
         validate(deleteEntityRequest);
 
-        DeleteRequestBuilder deleteRequestBuilder = elasticClient.getClient()
-                .prepareDelete(
-                deleteEntityRequest.getIndexName(),
-                deleteEntityRequest.getMappingType(),
-                deleteEntityRequest.getReferenceId()
-                );
-        deleteRequestBuilder.setRouting(deleteEntityRequest.getRoutingKey());
-        deleteRequestBuilder.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE)
-                .execute().actionGet();
-    }
+        DeleteRequest request = new DeleteRequest(deleteEntityRequest.getIndexName(), deleteEntityRequest.getMappingType(),deleteEntityRequest.getReferenceId());
+        request.routing(deleteEntityRequest.getRoutingKey());
+        request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
+
+      try {
+          elasticClient.getClient().delete(request,RequestOptions.DEFAULT);
+      } catch (IOException e) {
+          throw new JelasticException("Error Deleting entity", e);
+      }
+  }
 
     @Override
     public void close() {

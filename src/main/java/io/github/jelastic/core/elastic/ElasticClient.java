@@ -19,14 +19,21 @@ import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
-import com.google.common.net.HostAndPort;
+
 import io.github.jelastic.core.config.JElasticConfiguration;
-import io.github.jelastic.core.helpers.TransportAddressHelper;
+
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.transport.TransportClient;
+import org.apache.http.HttpHost;
+
+import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -34,13 +41,17 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Getter
 public class ElasticClient {
 
+    private static String AUTH_HEADER = "Authorization";
+
     public final JElasticConfiguration JElasticConfiguration;
-    private TransportClient client;
+    private RestHighLevelClient client;
 
     public ElasticClient(JElasticConfiguration configuration) throws IOException {
         Preconditions.checkNotNull(configuration, "Es configuration can't be null");
@@ -67,16 +78,16 @@ public class ElasticClient {
                 .put("cluster.name", JElasticConfiguration.getClusterName())
                 .build();
 
-        this.client = new PreBuiltTransportClient(settings);
+        List<HttpHost> hosts = JElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).collect(Collectors.toList());
+        RestClientBuilder restClientBuilder = RestClient.builder(hosts.toArray(new HttpHost[0]));
+        this.client = new RestHighLevelClient(restClientBuilder);
 
-        for (HostAndPort hostAndPort : JElasticConfiguration.getServers()) {
-            this.client.addTransportAddress(TransportAddressHelper.fromHostAndPort(hostAndPort));
-        }
-
+        this.client.cluster().putSettings(new ClusterUpdateSettingsRequest().persistentSettings(settings), RequestOptions.DEFAULT);
         log.info("Started Es client");
     }
 
 
+    @SneakyThrows
     public void stop() {
         log.info("Stopped ES client");
 

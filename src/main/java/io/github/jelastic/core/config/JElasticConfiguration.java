@@ -59,4 +59,5 @@ public class JElasticConfiguration {
 
     @JsonProperty
     private int maxResultSize = 10000;
+
 }
