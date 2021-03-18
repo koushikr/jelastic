@@ -387,7 +387,7 @@ public class ElasticRepository implements Closeable {
     }
 
 
-    public <T> List<T> search(String index, QueryBuilder queryBuilder,
+    public <T> JElasticSearchResponse<T> search(String index, QueryBuilder queryBuilder,
                                     PageWindow pageWindow, Class<T> klass) {
 
         org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(index);
@@ -406,7 +406,7 @@ public class ElasticRepository implements Closeable {
         }
 
 
-        return ElasticUtils.getResponse(searchResponse, klass);
+        return ElasticUtils.getSearchResponse(searchResponse, klass);
     }
 
     public <T> List<T> searchByIds(IdSearchRequest<T> idSearchRequest) {
