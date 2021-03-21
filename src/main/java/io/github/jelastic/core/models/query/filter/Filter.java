@@ -46,7 +46,8 @@ import lombok.SneakyThrows;
         @JsonSubTypes.Type(value = AndFilter.class, name = FilterType.AND),
         @JsonSubTypes.Type(value = ORFilter.class, name = FilterType.OR),
         @JsonSubTypes.Type(value = ConstantScoreFilter.class, name = FilterType.CONSTANT_SCORE),
-        @JsonSubTypes.Type(value = MatchFilter.class, name = FilterType.MATCH)
+        @JsonSubTypes.Type(value = MatchFilter.class, name = FilterType.MATCH),
+        @JsonSubTypes.Type(value = MatchFilter.class, name = FilterType.NESTED)
 })
 @Data
 public abstract class Filter {

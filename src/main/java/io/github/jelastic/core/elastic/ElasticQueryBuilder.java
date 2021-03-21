@@ -26,6 +26,7 @@ import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.elasticsearch.index.query.QueryBuilders;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
@@ -144,5 +145,12 @@ public class ElasticQueryBuilder implements FilterVisitor<QueryBuilder> {
     @Override
     public QueryBuilder visit(MatchFilter matchFilter) {
         return matchQuery(matchFilter.getFieldName(), getNormalizedValue(matchFilter.getValue()));
+    }
+
+    @Override
+    public QueryBuilder visit (NestedFilter nestedFilter) {
+        BoolQueryBuilder boolQueryBuilder = boolQuery();
+        nestedFilter.getFilters().forEach(k -> boolQueryBuilder.must(k.accept(this)));
+        return QueryBuilders.nestedQuery(nestedFilter.getFieldName(),boolQueryBuilder,nestedFilter.getScoreMode());
     }
 }
