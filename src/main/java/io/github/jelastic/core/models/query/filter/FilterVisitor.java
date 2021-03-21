@@ -61,4 +61,6 @@ public interface FilterVisitor<T> {
 
     T visit(MatchFilter matchFilter);
 
+    T visit(NestedFilter nestedFilter);
+
 }

@@ -38,6 +38,7 @@ public interface FilterType {
     String CONTAINS = "CONTAINS";
     String CONSTANT_SCORE = "CONSTANT_SCORE";
     String MATCH = "MATCH";
+    String NESTED = "NESTED";
 
     /* Predicates */
     String AND = "AND";
