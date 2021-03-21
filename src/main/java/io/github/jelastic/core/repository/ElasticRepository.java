@@ -334,6 +334,7 @@ public class ElasticRepository implements Closeable {
         if (!Objects.isNull(query.getReScorers()) && !query.getReScorers().isEmpty()) {
             query.getReScorers().forEach(searchRequestBuilder::addRescorer);
         }
+        searchRequestBuilder.setFetchSource(query.getIncludedSourceField(),query.getExcludedSourceField());
 
         SearchResponse searchResponse = searchRequestBuilder
                 .setFrom(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())

@@ -41,7 +41,11 @@ public class JElasticQuery {
     @Builder.Default
     private Set<JElasticSorter> sorters = new TreeSet();
     @Builder.Default
-    private List<RescorerBuilder>  reScorers = new ArrayList<>();
+    private List<RescorerBuilder> reScorers = new ArrayList<>();
+
+    private String[] includedSourceField;
+
+    private String[] excludedSourceField;
 
 
     public void addFilter(Filter filter) {
