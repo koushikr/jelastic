@@ -75,14 +75,14 @@ public class ElasticClient {
 
         final Settings settings = settingsBuilder
                 .putProperties(JElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
-                .put("cluster.name", JElasticConfiguration.getClusterName())
+                //.put("cluster.name", JElasticConfiguration.getClusterName())
                 .build();
 
         List<HttpHost> hosts = JElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).collect(Collectors.toList());
         RestClientBuilder restClientBuilder = RestClient.builder(hosts.toArray(new HttpHost[0]));
         this.client = new RestHighLevelClient(restClientBuilder);
 
-        this.client.cluster().putSettings(new ClusterUpdateSettingsRequest().persistentSettings(settings), RequestOptions.DEFAULT);
+        this.client.cluster().putSettings(new ClusterUpdateSettingsRequest().transientSettings(settings), RequestOptions.DEFAULT);
         log.info("Started Es client");
     }
 
