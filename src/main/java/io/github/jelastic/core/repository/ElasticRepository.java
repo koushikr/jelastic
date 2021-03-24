@@ -217,7 +217,7 @@ public class ElasticRepository implements Closeable {
         IndexRequest request = new IndexRequest(entitySaveRequest.getIndexName())
                 .type(entitySaveRequest.getMappingType())
                 .id(entitySaveRequest.getReferenceId())
-                .source(entitySaveRequest.getValue())
+                .source(entitySaveRequest.getValue(), XContentType.JSON)
                 .routing(entitySaveRequest.getRoutingKey())
                 .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
         try {
