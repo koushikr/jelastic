@@ -18,8 +18,14 @@ package io.github.jelastic.core.health;
 import com.codahale.metrics.health.HealthCheck;
 import io.github.jelastic.core.config.JElasticConfiguration;
 import io.github.jelastic.core.elastic.ElasticClient;
+import io.github.jelastic.core.exception.JelasticException;
 import lombok.extern.slf4j.Slf4j;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
+import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
+
+import java.io.IOException;
 
 
 /**
@@ -38,8 +44,13 @@ public class EsClientHealth extends HealthCheck {
 
     @Override
     protected Result check() {
-        final ClusterHealthStatus status = elasticClient.getClient().admin().cluster().prepareHealth()
-                .get().getStatus();
+        ClusterHealthRequest request = new ClusterHealthRequest();
+        final ClusterHealthStatus status;
+        try {
+            status = elasticClient.getClient().cluster().health(request, RequestOptions.DEFAULT).getStatus();
+        } catch (IOException e) {
+            throw new JelasticException("Error checking health", e);
+        }
 
         if (status == ClusterHealthStatus.RED || (jElasticConfiguration.isFailOnYellow()
                 && status == ClusterHealthStatus.YELLOW)) {
