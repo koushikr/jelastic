@@ -95,7 +95,6 @@ Contributors
 ------------
 * [Koushik R](https://github.com/koushikr)
 * [Sunil Rajashekar](https://github.com/sunil-rajashekar) 
-* [Avanish Pandey](https://github.com/avanishp)
 
 LICENSE
 -------

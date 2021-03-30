@@ -41,13 +41,6 @@
                 <role>developer</role>
             </roles>
         </developer>
-        <developer>
-            <id>avanishp</id>
-            <name>Avanish Pandey</name>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
     </developers>
 
     <properties>
