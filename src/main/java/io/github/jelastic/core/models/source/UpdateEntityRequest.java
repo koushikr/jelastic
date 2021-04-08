@@ -30,7 +30,6 @@ import javax.validation.constraints.NotNull;
 public class UpdateEntityRequest {
     @NotNull
     private String indexName;
-    private String mappingType;
 
     @NotNull
     private String referenceId;

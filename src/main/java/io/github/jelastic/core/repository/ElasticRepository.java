@@ -215,7 +215,6 @@ public class ElasticRepository implements Closeable {
         }
 
         IndexRequest request = new IndexRequest(entitySaveRequest.getIndexName())
-                .type(entitySaveRequest.getMappingType())
                 .id(entitySaveRequest.getReferenceId())
                 .source(entitySaveRequest.getValue(), XContentType.JSON)
                 .routing(entitySaveRequest.getRoutingKey())
@@ -487,7 +486,7 @@ public class ElasticRepository implements Closeable {
   public void delete(DeleteEntityRequest deleteEntityRequest) {
         validate(deleteEntityRequest);
 
-        DeleteRequest request = new DeleteRequest(deleteEntityRequest.getIndexName(), deleteEntityRequest.getMappingType(),deleteEntityRequest.getReferenceId());
+        DeleteRequest request = new DeleteRequest(deleteEntityRequest.getIndexName(),deleteEntityRequest.getReferenceId());
         request.routing(deleteEntityRequest.getRoutingKey());
         request.setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
 

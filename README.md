@@ -38,7 +38,6 @@ JElastic is for using elasticsearch within application paradigm without setting 
 ```java
       SearchRequest searchRequest = SearchRequest.builder()
                                         .index("testIndex")
-                                        .type("testType")
                                         .query(Query.builder()
                                                .filters(Sets.newHashSet())
                                                .sorters(Sets.newHashSet())
@@ -75,17 +74,17 @@ Use the following maven dependency
 ```
 
 ### Version support
-| jelastic               |  es transport client|
+| jelastic               |  es client|
 | -----------------------| ------------------- |
-| 7.2.0-6                |  7.2.0               |
-| 7.2.0-7-SNAPSHOT       |  7.2.0               |
+| 7.2.0-6                |  7.2.0 (transport client)              |
+| 7.2.0-7-SNAPSHOT       |  7.2.0 (rest high level client)              |
 
 ### Configuration
 ```yaml
 jelastic:
   clusterName: elasticsearch
   servers:
-    - localhost:9300
+    - localhost:9200
   failOnYellow: false
   settingsFile: ~/configs/settings.xml
   maxResultSize: 10000    

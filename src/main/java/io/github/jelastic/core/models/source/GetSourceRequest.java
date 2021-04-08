@@ -32,7 +32,6 @@ public class GetSourceRequest<T> {
     private String referenceId;
     @NotNull
     private String indexName;
-    private String mappingType;
     private Class<T> klass;
     private String routingKey;
 
