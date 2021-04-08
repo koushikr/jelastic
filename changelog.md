@@ -1,5 +1,8 @@
 # Changelog
 
+## 7.2.0-7-SNAPSHOT
+1. Updated to elasticsearch rest client from the existing transport client.
+
 ## 7.2.0-6
 1. Minor fixes in the loadAll method on guarding against batch fetches and avoiding multiple calls to ES. 
 

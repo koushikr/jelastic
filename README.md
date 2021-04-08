@@ -70,7 +70,7 @@ Use the following maven dependency
 <dependency>
     <groupId>io.github.jelastic</groupId>
     <artifactId>jelastic</artifactId>
-    <version>7.2.0-4</version>
+    <version>7.2.0-6</version>
 </dependency>
 ```
 
@@ -78,6 +78,7 @@ Use the following maven dependency
 | jelastic               |  es transport client|
 | -----------------------| ------------------- |
 | 7.2.0-6                |  7.2.0               |
+| 7.2.0-7-SNAPSHOT       |  7.2.0               |
 
 ### Configuration
 ```yaml
