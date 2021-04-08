@@ -36,9 +36,6 @@ public class CreateMappingRequest {
     private String indexName;
 
     @NotNull
-    private String mappingType;
-
-    @NotNull
     private MapElement mappingSource;
 
 }

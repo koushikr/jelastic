@@ -31,7 +31,6 @@ public class EntitySaveRequest {
 
     @NotNull
     private String indexName;
-    private String mappingType;
     private String referenceId;
     @NotNull
     private String value;

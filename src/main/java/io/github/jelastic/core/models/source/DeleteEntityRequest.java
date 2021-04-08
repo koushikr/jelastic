@@ -12,7 +12,6 @@ import javax.validation.constraints.NotNull;
 public class DeleteEntityRequest {
     @NotNull
     private String indexName;
-    private String mappingType;
     @NotNull
     private String referenceId;
     private String routingKey;

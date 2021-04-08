@@ -69,7 +69,7 @@ public interface ElasticUtils {
     }
 
     static GetRequest getRequest(GetSourceRequest getSourceRequest) {
-        return new GetRequest(getSourceRequest.getIndexName()).id(getSourceRequest.getReferenceId()).type(getSourceRequest.getMappingType());
+        return new GetRequest(getSourceRequest.getIndexName()).id(getSourceRequest.getReferenceId());
     }
 
     static Map<String, Object> getSettings(CreateTemplateRequest createTemplateRequest) {
