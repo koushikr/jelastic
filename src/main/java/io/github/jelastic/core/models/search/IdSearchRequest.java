@@ -30,7 +30,6 @@ import java.util.List;
 public class IdSearchRequest<T> {
     @NotNull
     private String index;
-    private String type;
     @NotNull
     private List<String> ids;
     private Class<T> klass;

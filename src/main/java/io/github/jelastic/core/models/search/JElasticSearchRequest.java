@@ -15,8 +15,6 @@ public class JElasticSearchRequest<T> {
     @NotNull
     private String index;
     @NotNull
-    private String type;
-    @NotNull
     private JElasticQuery query;
     private Class<T> klass;
     private Set<String> routingKeys;

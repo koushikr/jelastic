@@ -412,7 +412,7 @@ public class ElasticRepository implements Closeable {
         validate(idSearchRequest);
         MultiGetRequest request = new MultiGetRequest();
         idSearchRequest.getIds().forEach(id -> {
-            request.add(new MultiGetRequest.Item(idSearchRequest.getIndex(), idSearchRequest.getType(), id));
+            request.add(new MultiGetRequest.Item(idSearchRequest.getIndex(), id));
         });
 
 

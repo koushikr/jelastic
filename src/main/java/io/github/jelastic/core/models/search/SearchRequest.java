@@ -33,8 +33,7 @@ import javax.validation.constraints.NotNull;
 public class SearchRequest<T> {
     @NotNull
     private String index;
-    @NotNull
-    private String type;
+
     @NotNull
     private Query query;
     private Class<T> klass;
