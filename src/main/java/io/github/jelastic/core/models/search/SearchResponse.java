@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class JElasticSearchResponse<T> {
+public class SearchResponse<T> {
 
   private long count;
 

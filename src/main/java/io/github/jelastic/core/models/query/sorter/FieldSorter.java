@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class FieldSorter extends JElasticSorter {
+public class FieldSorter extends Sorter {
 
     @NotNull
     @NotEmpty

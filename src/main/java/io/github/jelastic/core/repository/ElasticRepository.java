@@ -24,9 +24,8 @@ import io.github.jelastic.core.models.mapping.CreateMappingRequest;
 import io.github.jelastic.core.models.query.Query;
 import io.github.jelastic.core.models.query.paged.PageWindow;
 import io.github.jelastic.core.models.search.IdSearchRequest;
-import io.github.jelastic.core.models.search.JElasticSearchRequest;
-import io.github.jelastic.core.models.search.JElasticSearchResponse;
 import io.github.jelastic.core.models.search.SearchRequest;
+import io.github.jelastic.core.models.search.SearchResponse;
 import io.github.jelastic.core.models.source.*;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import io.github.jelastic.core.utils.ElasticUtils;
@@ -40,35 +39,25 @@ import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
 import org.elasticsearch.action.admin.indices.alias.IndicesAliasesRequest;
 import org.elasticsearch.action.admin.indices.alias.get.GetAliasesRequest;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
-
 import org.elasticsearch.action.delete.DeleteRequest;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.get.MultiGetRequest;
 import org.elasticsearch.action.get.MultiGetResponse;
-
 import org.elasticsearch.action.index.IndexRequest;
-
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchScrollRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.action.update.UpdateRequest;
-import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.GetAliasesResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.indices.*;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.cluster.metadata.AliasMetaData;
-import org.elasticsearch.common.collect.ImmutableOpenMap;
 import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.Scroll;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.inject.Singleton;
 import java.io.Closeable;
@@ -87,7 +76,7 @@ public class ElasticRepository implements Closeable {
     private final ElasticClient elasticClient;
     private final QueryManager queryManager;
 
-    public IndexTemplateMetaData getTemplate(@NotEmpty String templateName) {
+    public IndexTemplateMetaData getTemplate(String templateName) {
         GetIndexTemplatesRequest getRequest = new GetIndexTemplatesRequest(templateName);
 
         try {
@@ -114,7 +103,6 @@ public class ElasticRepository implements Closeable {
 
     public void createMapping(CreateMappingRequest mappingRequest) {
         validate(mappingRequest);
-
 
         PutMappingRequest request = new PutMappingRequest(mappingRequest.getIndexName())
                 .source(mappingRequest.getMappingSource());
@@ -147,7 +135,7 @@ public class ElasticRepository implements Closeable {
         }
     }
 
-    public void createIndex(@NotEmpty String indexName) {
+    public void createIndex(String indexName) {
 
         if (!isExistsIndex(indexName)) {
             try {
@@ -161,7 +149,7 @@ public class ElasticRepository implements Closeable {
                                     .waitForStatus(ClusterHealthStatus.GREEN),
                                 RequestOptions.DEFAULT);
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new JelasticException("Create Index Failed", e);
             }
 
 
@@ -220,7 +208,7 @@ public class ElasticRepository implements Closeable {
                 .routing(entitySaveRequest.getRoutingKey())
                 .setRefreshPolicy(WriteRequest.RefreshPolicy.IMMEDIATE);
         try {
-            val indexRequestBuilder = elasticClient.getClient()
+            elasticClient.getClient()
                     .index(request,RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new JelasticException("Failed to save data", e);
@@ -271,15 +259,15 @@ public class ElasticRepository implements Closeable {
         }
     }
 
-    public void reAlias(@NotEmpty  String newIndex, @NotEmpty String aliasName) {
-        GetAliasesResponse var = null;
+    public void reAlias(String newIndex, String aliasName) {
+        GetAliasesResponse getAliasesResponse;
         try {
-            var = elasticClient.getClient().indices()
+            getAliasesResponse = elasticClient.getClient().indices()
                     .getAlias(new GetAliasesRequest(aliasName), RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new JelasticException("Error Getting alias", e);
         }
-        Map<String, Set<AliasMetaData>> aliases = var.getAliases();
+        Map<String, Set<AliasMetaData>> aliases = getAliasesResponse.getAliases();
 
         IndicesAliasesRequest request = new IndicesAliasesRequest();
         if (aliases.isEmpty()) {
@@ -310,49 +298,9 @@ public class ElasticRepository implements Closeable {
      * @param searchRequest searchRequest
      * @param <T> Response class Type
      * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
-     * @return List<T> list of objects that meet searchCriteria
-     * @deprecated as of 7.2.0-5, replaced by {@link #enumeratedSearch(JElasticSearchRequest)}
+     * @return SearchResponse<T> list of objects that meet searchCriteria
      */
-    @Deprecated
-    public <T> List<T> search(SearchRequest<T> searchRequest) {
-        validate(searchRequest);
-        val query = searchRequest.getQuery();
-        QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
-
-        org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(searchRequest.getIndex());
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
-
-        if (!query.getSorters().isEmpty()) {
-            query.getSorters().forEach(sorter -> searchSourceBuilder.sort(
-                    SortBuilders.fieldSort(sorter.getFieldName())
-                            .order(ElasticUtils.getSortOrder(sorter.getSortOrder()))
-            ));
-        }
-
-        searchSourceBuilder
-                .from(query.getPageWindow().getPageNumber() * query.getPageWindow().getPageSize())
-                .size(query.getPageWindow().getPageSize());
-
-        request.source(searchSourceBuilder);
-        SearchResponse searchResponse = null;
-        try {
-            searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
-        } catch (IOException e) {
-            throw new JelasticException("Error Searching the results", e);
-        }
-
-        return ElasticUtils.getResponse(searchResponse, searchRequest.getKlass());
-    }
-
-    /**
-     * Search elasticSearch based on the search query passed.
-     *
-     * @param searchRequest searchRequest
-     * @param <T> Response class Type
-     * @throws io.github.jelastic.core.exception.InvalidQueryException when query is not built correctly.
-     * @return JElasticSearchResponse<T> list of objects that meet searchCriteria
-     */
-    public <T> JElasticSearchResponse<T> enumeratedSearch(JElasticSearchRequest<T> searchRequest) {
+    public <T> SearchResponse<T> enumeratedSearch(SearchRequest<T> searchRequest) {
         validate(searchRequest);
         val query = searchRequest.getQuery();
         QueryBuilder queryBuilder = queryManager.getQueryBuilder(query);
@@ -375,7 +323,7 @@ public class ElasticRepository implements Closeable {
 
 
         request.source(searchSourceBuilder);
-        SearchResponse searchResponse = null;
+        org.elasticsearch.action.search.SearchResponse searchResponse = null;
         try {
             searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
@@ -386,8 +334,8 @@ public class ElasticRepository implements Closeable {
     }
 
 
-    public <T> JElasticSearchResponse<T> search(String index, QueryBuilder queryBuilder,
-                                    PageWindow pageWindow, Class<T> klass) {
+    public <T> SearchResponse<T> search(String index, QueryBuilder queryBuilder,
+                                        PageWindow pageWindow, Class<T> klass) {
 
         org.elasticsearch.action.search.SearchRequest request = new org.elasticsearch.action.search.SearchRequest(index);
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(queryBuilder);
@@ -397,13 +345,12 @@ public class ElasticRepository implements Closeable {
                 .size(pageWindow.getPageSize());
 
         request.source(searchSourceBuilder);
-        SearchResponse searchResponse = null;
+        org.elasticsearch.action.search.SearchResponse searchResponse = null;
         try {
             searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
         } catch (IOException e) {
             throw new JelasticException("Error Searching the results", e);
         }
-
 
         return ElasticUtils.getSearchResponse(searchResponse, klass);
     }
@@ -411,9 +358,7 @@ public class ElasticRepository implements Closeable {
     public <T> List<T> searchByIds(IdSearchRequest<T> idSearchRequest) {
         validate(idSearchRequest);
         MultiGetRequest request = new MultiGetRequest();
-        idSearchRequest.getIds().forEach(id -> {
-            request.add(new MultiGetRequest.Item(idSearchRequest.getIndex(), id));
-        });
+        idSearchRequest.getIds().forEach(id -> request.add(new MultiGetRequest.Item(idSearchRequest.getIndex(), id)));
 
 
         MultiGetResponse multiGetItemResponses = null;
@@ -457,7 +402,7 @@ public class ElasticRepository implements Closeable {
                 .scroll(scroll);
 
         try {
-            SearchResponse searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
+            org.elasticsearch.action.search.SearchResponse searchResponse = elasticClient.getClient().search(request, RequestOptions.DEFAULT);
 
             String scrollId = searchResponse.getScrollId();
             List<T> batchedResult = ElasticUtils.getResponse(searchResponse, klass);

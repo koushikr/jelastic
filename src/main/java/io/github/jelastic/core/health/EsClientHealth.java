@@ -21,7 +21,6 @@ import io.github.jelastic.core.elastic.ElasticClient;
 import io.github.jelastic.core.exception.JelasticException;
 import lombok.extern.slf4j.Slf4j;
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest;
-import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.cluster.health.ClusterHealthStatus;
 

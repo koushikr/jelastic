@@ -13,7 +13,7 @@ import static org.elasticsearch.search.sort.ScriptSortBuilder.ScriptSortType;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class ScriptSorter extends JElasticSorter {
+public class ScriptSorter extends Sorter {
 
     @NotNull
     private Script script;

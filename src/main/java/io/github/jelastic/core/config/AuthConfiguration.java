@@ -1,5 +1,7 @@
+package io.github.jelastic.core.config;
+
 /*
- * Copyright 2019 Koushik R <rkoushik.14@gmail.com>.
+ * Copyright 2021 Koushik R <rkoushik.14@gmail.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.github.jelastic.core.models.query;
 
 import lombok.*;
 
-import java.util.List;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
-/**
- * Created by koushikr
- */
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
-@Builder
-public class QueryResponse {
+@EqualsAndHashCode
+@ToString
+@Data
+public class AuthConfiguration {
 
-    private long count;
+    @NotNull @NotEmpty
+    private String username;
 
-    private List<?> entities;
-
+    @NotNull @NotEmpty
+    private String password;
 }

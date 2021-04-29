@@ -15,13 +15,12 @@
  */
 package io.github.jelastic.core.utils;
 
-import io.github.jelastic.core.models.search.JElasticSearchResponse;
+import io.github.jelastic.core.models.search.SearchResponse;
 import io.github.jelastic.core.models.source.GetSourceRequest;
 import io.github.jelastic.core.models.template.CreateTemplateRequest;
 import lombok.val;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.MultiGetResponse;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.*;
@@ -41,7 +40,7 @@ public interface ElasticUtils {
         }
     }
 
-    static <T> List<T> getResponse(SearchResponse response, Class<T> klass) {
+    static <T> List<T> getResponse(org.elasticsearch.action.search.SearchResponse response, Class<T> klass) {
         return Arrays.stream(response.getHits().getHits())
                 .map(hit -> {
                     final Map<String, Object> result = hit.getSourceAsMap();
@@ -49,8 +48,8 @@ public interface ElasticUtils {
                 }).collect(Collectors.toList());
     }
 
-    static <T> JElasticSearchResponse<T> getSearchResponse(SearchResponse response, Class<T> klass) {
-        return JElasticSearchResponse.<T>builder()
+    static <T> SearchResponse<T> getSearchResponse(org.elasticsearch.action.search.SearchResponse response, Class<T> klass) {
+        return SearchResponse.<T>builder()
                 .count(response.getHits().getTotalHits().value)
                 .entities(Arrays.stream(response.getHits().getHits())
                         .map(hit -> {

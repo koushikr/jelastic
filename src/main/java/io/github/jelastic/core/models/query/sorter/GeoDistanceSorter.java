@@ -11,7 +11,7 @@ import java.util.Set;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class GeoDistanceSorter extends JElasticSorter {
+public class GeoDistanceSorter extends Sorter {
 
     @NotNull
     @NotEmpty

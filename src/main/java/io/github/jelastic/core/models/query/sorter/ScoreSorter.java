@@ -8,7 +8,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class ScoreSorter extends JElasticSorter {
+public class ScoreSorter extends Sorter {
 
     public ScoreSorter(){super(SorterType.SCORE);}
 
