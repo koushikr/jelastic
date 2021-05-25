@@ -16,7 +16,7 @@ package io.github.jelastic.core.config;
  * limitations under the License.
  */
 
-import io.dropwizard.util.Strings;
+import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.*;
 
@@ -41,16 +41,18 @@ public class AuthConfiguration {
 
     private String keyStorePass;
 
-    @ValidationMethod(message = "Auth Configuration is not Valid")
+    @ValidationMethod(message = "One of Auth/TLS Configuration is not Valid")
     public boolean isValidInput(){
         boolean valid = true;
+
         if(isAuthEnabled()){
-            valid = valid && !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password);
+            valid = !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password);
         }
 
         if(isTlsEnabled()){
             valid = valid && !Strings.isNullOrEmpty(trustStorePath) && !Strings.isNullOrEmpty(keyStorePass);
         }
+
         return valid;
     }
 }
