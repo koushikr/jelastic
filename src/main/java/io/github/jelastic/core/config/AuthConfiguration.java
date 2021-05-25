@@ -17,9 +17,9 @@ package io.github.jelastic.core.config;
  */
 
 import lombok.*;
-
-import javax.validation.constraints.NotEmpty;
+import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,7 +28,8 @@ import javax.validation.constraints.NotNull;
 @Data
 public class AuthConfiguration {
 
-    @NotNull @NotEmpty
+    @NotNull
+    @NotEmpty
     private String username;
 
     @NotNull @NotEmpty
