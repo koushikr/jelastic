@@ -33,4 +33,10 @@ public class AuthConfiguration {
 
     @NotNull @NotEmpty
     private String password;
+
+    private boolean tlsEnabled;
+
+    private String trustStorePath;
+
+    private String keyStorePass;
 }

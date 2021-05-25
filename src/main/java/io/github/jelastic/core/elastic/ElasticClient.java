@@ -28,6 +28,9 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
@@ -35,12 +38,20 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.settings.Settings;
 
+import javax.net.ssl.SSLContext;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 @Slf4j
 @Getter
@@ -49,7 +60,7 @@ public class ElasticClient {
     public final JElasticConfiguration jElasticConfiguration;
     private RestHighLevelClient client;
 
-    public ElasticClient(JElasticConfiguration configuration) throws IOException {
+    public ElasticClient(JElasticConfiguration configuration) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, KeyManagementException {
         Preconditions.checkNotNull(configuration, "Es configuration can't be null");
 
         this.jElasticConfiguration = configuration;
@@ -76,6 +87,20 @@ public class ElasticClient {
         RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).toArray(HttpHost[]::new));
 
         if(null != jElasticConfiguration.getAuthConfiguration()){
+
+            if(jElasticConfiguration.getAuthConfiguration().isTlsEnabled()){
+                Path trustStorePath = Paths.get(jElasticConfiguration.getAuthConfiguration().getTrustStorePath());
+                KeyStore truststore = KeyStore.getInstance("pkcs12");
+                try (InputStream is = Files.newInputStream(trustStorePath)) {
+                    truststore.load(is, jElasticConfiguration.getAuthConfiguration().getKeyStorePass().toCharArray());
+                }
+                SSLContextBuilder sslBuilder = SSLContexts.custom()
+                        .loadTrustMaterial(truststore, null);
+                final SSLContext sslContext = sslBuilder.build();
+                restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder -> httpAsyncClientBuilder.setSSLContext(sslContext));
+            }
+
+
             final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(
                     AuthScope.ANY,
