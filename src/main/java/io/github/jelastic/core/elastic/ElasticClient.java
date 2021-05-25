@@ -92,7 +92,9 @@ public class ElasticClient {
             final CredentialsProvider credentialsProvider = getAuthCredentials();
 
             restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder -> {
-                httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                if(null != credentialsProvider) {
+                    httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                }
                 if(null != sslContext){
                     httpAsyncClientBuilder.setSSLContext(sslContext);
                 }
@@ -109,14 +111,17 @@ public class ElasticClient {
     }
 
     private CredentialsProvider getAuthCredentials() {
-        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-        credentialsProvider.setCredentials(
-                AuthScope.ANY,
-                new UsernamePasswordCredentials(
-                        jElasticConfiguration.getAuthConfiguration().getUsername(),
-                        jElasticConfiguration.getAuthConfiguration().getPassword()
-                )
-        );
+        CredentialsProvider credentialsProvider = null;
+        if(jElasticConfiguration.getAuthConfiguration().isAuthEnabled()) {
+            credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(
+                    AuthScope.ANY,
+                    new UsernamePasswordCredentials(
+                            jElasticConfiguration.getAuthConfiguration().getUsername(),
+                            jElasticConfiguration.getAuthConfiguration().getPassword()
+                    )
+            );
+        }
         return credentialsProvider;
     }
 

@@ -16,10 +16,11 @@ package io.github.jelastic.core.config;
  * limitations under the License.
  */
 
+import io.dropwizard.util.Strings;
+import io.dropwizard.validation.ValidationMethod;
 import lombok.*;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,10 +29,10 @@ import javax.validation.constraints.NotNull;
 @Data
 public class AuthConfiguration {
 
-    @NotNull @NotEmpty
+    private boolean authEnabled;
+
     private String username;
 
-    @NotNull @NotEmpty
     private String password;
 
     private boolean tlsEnabled;
@@ -39,4 +40,17 @@ public class AuthConfiguration {
     private String trustStorePath;
 
     private String keyStorePass;
+
+    @ValidationMethod(message = "Auth Configuration is not Valid")
+    public boolean isValidInput(){
+        boolean valid = true;
+        if(isAuthEnabled()){
+            valid = valid && !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password);
+        }
+
+        if(isTlsEnabled()){
+            valid = valid && !Strings.isNullOrEmpty(trustStorePath) && !Strings.isNullOrEmpty(keyStorePass);
+        }
+        return valid;
+    }
 }
