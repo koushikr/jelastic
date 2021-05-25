@@ -3,8 +3,8 @@ package io.github.jelastic.core.models.query.sorter;
 
 import lombok.*;
 import org.elasticsearch.common.geo.GeoPoint;
+import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 

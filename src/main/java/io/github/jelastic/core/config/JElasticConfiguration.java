@@ -19,9 +19,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.net.HostAndPort;
 import lombok.*;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,11 +38,11 @@ import java.util.Map;
 public class JElasticConfiguration {
 
     @JsonProperty
-    @javax.validation.constraints.NotEmpty
+    @NotEmpty
     private String clusterName = "elasticsearch";
 
     @JsonProperty
-    @NotNull
+    @NotEmpty
     private List<HostAndPort> servers = Collections.emptyList();
 
     @JsonProperty
