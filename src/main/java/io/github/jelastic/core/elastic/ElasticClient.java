@@ -28,7 +28,6 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
@@ -86,30 +85,19 @@ public class ElasticClient {
 
         RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).toArray(HttpHost[]::new));
 
+
         if(null != jElasticConfiguration.getAuthConfiguration()){
 
-            if(jElasticConfiguration.getAuthConfiguration().isTlsEnabled()){
-                Path trustStorePath = Paths.get(jElasticConfiguration.getAuthConfiguration().getTrustStorePath());
-                KeyStore truststore = KeyStore.getInstance("pkcs12");
-                try (InputStream is = Files.newInputStream(trustStorePath)) {
-                    truststore.load(is, jElasticConfiguration.getAuthConfiguration().getKeyStorePass().toCharArray());
+            final SSLContext sslContext = getSslContext();
+            final CredentialsProvider credentialsProvider = getAuthCredentials();
+
+            restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder -> {
+                httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
+                if(null != sslContext){
+                    httpAsyncClientBuilder.setSSLContext(sslContext);
                 }
-                SSLContextBuilder sslBuilder = SSLContexts.custom()
-                        .loadTrustMaterial(truststore, null);
-                final SSLContext sslContext = sslBuilder.build();
-                restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder -> httpAsyncClientBuilder.setSSLContext(sslContext));
-            }
-
-
-            final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(
-                    AuthScope.ANY,
-                    new UsernamePasswordCredentials(
-                            jElasticConfiguration.getAuthConfiguration().getUsername(),
-                            jElasticConfiguration.getAuthConfiguration().getPassword()
-                    )
-            );
-            restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder -> httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider));
+                return httpAsyncClientBuilder;
+            });
         }
 
         this.client = new RestHighLevelClient(restClientBuilder);
@@ -118,6 +106,34 @@ public class ElasticClient {
             this.client.cluster().putSettings(new ClusterUpdateSettingsRequest().transientSettings(settings), RequestOptions.DEFAULT);
         }
         log.info("Started Es client");
+    }
+
+    private CredentialsProvider getAuthCredentials() {
+        final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+        credentialsProvider.setCredentials(
+                AuthScope.ANY,
+                new UsernamePasswordCredentials(
+                        jElasticConfiguration.getAuthConfiguration().getUsername(),
+                        jElasticConfiguration.getAuthConfiguration().getPassword()
+                )
+        );
+        return credentialsProvider;
+    }
+
+    private SSLContext getSslContext() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException {
+        SSLContext sslContext = null;
+        if(jElasticConfiguration.getAuthConfiguration().isTlsEnabled()){
+            Path trustStorePath = Paths.get(jElasticConfiguration.getAuthConfiguration().getTrustStorePath());
+            KeyStore truststore = KeyStore.getInstance("pkcs12");
+            try (InputStream is = Files.newInputStream(trustStorePath)) {
+                truststore.load(is, jElasticConfiguration.getAuthConfiguration().getKeyStorePass().toCharArray());
+            }
+            SSLContextBuilder sslBuilder = SSLContexts.custom()
+                    .loadTrustMaterial(truststore, null);
+            sslContext = sslBuilder.build();
+
+        }
+        return sslContext;
     }
 
 
