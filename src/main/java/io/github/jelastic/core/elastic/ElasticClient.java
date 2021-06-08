@@ -84,7 +84,8 @@ public class ElasticClient {
                 .putProperties(jElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
                 .build();
 
-        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(), Objects.nonNull(jElasticConfiguration.getAuthConfiguration()) && jElasticConfiguration.getAuthConfiguration().isTlsEnabled() ? "https" : null)).toArray(HttpHost[]::new));
+        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(),
+            getScheme())).toArray(HttpHost[]::new));
 
 
         if(null != jElasticConfiguration.getAuthConfiguration()){
@@ -140,6 +141,13 @@ public class ElasticClient {
 
         }
         return sslContext;
+    }
+
+    private String getScheme() {
+        if (Objects.nonNull(jElasticConfiguration.getAuthConfiguration()) && jElasticConfiguration.getAuthConfiguration().isTlsEnabled()) {
+            return "https";
+        }
+        return null;
     }
 
 
