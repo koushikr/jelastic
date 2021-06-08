@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
 import io.github.jelastic.core.config.JElasticConfiguration;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +84,7 @@ public class ElasticClient {
                 .putProperties(jElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
                 .build();
 
-        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(), jElasticConfiguration.getAuthConfiguration().isTlsEnabled() ? "https" : "http")).toArray(HttpHost[]::new));
+        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(), Objects.nonNull(jElasticConfiguration.getAuthConfiguration()) && jElasticConfiguration.getAuthConfiguration().isTlsEnabled() ? "https" : null)).toArray(HttpHost[]::new));
 
 
         if(null != jElasticConfiguration.getAuthConfiguration()){
