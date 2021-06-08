@@ -39,6 +39,8 @@ public class AuthConfiguration {
 
     private String trustStorePath;
 
+    private String keyStoreType;
+
     private String keyStorePass;
 
     @ValidationMethod(message = "One of Auth/TLS Configuration is not Valid")
@@ -50,7 +52,8 @@ public class AuthConfiguration {
         }
 
         if(isTlsEnabled()){
-            valid = valid && !Strings.isNullOrEmpty(trustStorePath) && !Strings.isNullOrEmpty(keyStorePass);
+            valid = valid && !Strings.isNullOrEmpty(trustStorePath) && !Strings.isNullOrEmpty(keyStoreType)
+                && !Strings.isNullOrEmpty(keyStorePass);
         }
 
         return valid;

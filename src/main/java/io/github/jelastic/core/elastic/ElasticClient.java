@@ -83,7 +83,7 @@ public class ElasticClient {
                 .putProperties(jElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
                 .build();
 
-        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).toArray(HttpHost[]::new));
+        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(), jElasticConfiguration.getAuthConfiguration().isTlsEnabled() ? "https" : "http")).toArray(HttpHost[]::new));
 
 
         if(null != jElasticConfiguration.getAuthConfiguration()){
@@ -129,7 +129,7 @@ public class ElasticClient {
         SSLContext sslContext = null;
         if(jElasticConfiguration.getAuthConfiguration().isTlsEnabled()){
             Path trustStorePath = Paths.get(jElasticConfiguration.getAuthConfiguration().getTrustStorePath());
-            KeyStore truststore = KeyStore.getInstance("pkcs12");
+            KeyStore truststore = KeyStore.getInstance(jElasticConfiguration.getAuthConfiguration().getKeyStoreType());
             try (InputStream is = Files.newInputStream(trustStorePath)) {
                 truststore.load(is, jElasticConfiguration.getAuthConfiguration().getKeyStorePass().toCharArray());
             }
