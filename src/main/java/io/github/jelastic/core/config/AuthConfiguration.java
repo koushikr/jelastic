@@ -39,20 +39,29 @@ public class AuthConfiguration {
 
     private String trustStorePath;
 
+    private String keyStoreType;
+
     private String keyStorePass;
 
     @ValidationMethod(message = "One of Auth/TLS Configuration is not Valid")
     public boolean isValidInput(){
-        boolean valid = true;
-
-        if(isAuthEnabled()){
-            valid = !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password);
+        if (isAuthEnabled() && invalidAuthConfiguration()) {
+            return false;
         }
 
-        if(isTlsEnabled()){
-            valid = valid && !Strings.isNullOrEmpty(trustStorePath) && !Strings.isNullOrEmpty(keyStorePass);
+        if (isTlsEnabled() && invalidTlsConfiguration()) {
+            return false;
         }
 
-        return valid;
+        return true;
+    }
+
+    private boolean invalidAuthConfiguration() {
+        return Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(password);
+    }
+
+    private boolean invalidTlsConfiguration() {
+        return Strings.isNullOrEmpty(trustStorePath) || Strings.isNullOrEmpty(keyStoreType)
+            || Strings.isNullOrEmpty(keyStorePass);
     }
 }

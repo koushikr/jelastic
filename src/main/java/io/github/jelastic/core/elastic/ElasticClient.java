@@ -20,6 +20,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.io.Resources;
 import io.github.jelastic.core.config.JElasticConfiguration;
+import java.util.Objects;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -83,7 +84,8 @@ public class ElasticClient {
                 .putProperties(jElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
                 .build();
 
-        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).toArray(HttpHost[]::new));
+        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(),
+            getScheme())).toArray(HttpHost[]::new));
 
 
         if(null != jElasticConfiguration.getAuthConfiguration()){
@@ -129,7 +131,7 @@ public class ElasticClient {
         SSLContext sslContext = null;
         if(jElasticConfiguration.getAuthConfiguration().isTlsEnabled()){
             Path trustStorePath = Paths.get(jElasticConfiguration.getAuthConfiguration().getTrustStorePath());
-            KeyStore truststore = KeyStore.getInstance("pkcs12");
+            KeyStore truststore = KeyStore.getInstance(jElasticConfiguration.getAuthConfiguration().getKeyStoreType());
             try (InputStream is = Files.newInputStream(trustStorePath)) {
                 truststore.load(is, jElasticConfiguration.getAuthConfiguration().getKeyStorePass().toCharArray());
             }
@@ -139,6 +141,13 @@ public class ElasticClient {
 
         }
         return sslContext;
+    }
+
+    private String getScheme() {
+        if (Objects.nonNull(jElasticConfiguration.getAuthConfiguration()) && jElasticConfiguration.getAuthConfiguration().isTlsEnabled()) {
+            return "https";
+        }
+        return null;
     }
 
 
