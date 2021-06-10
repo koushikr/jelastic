@@ -16,6 +16,7 @@ package io.github.jelastic.core.config;
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.*;
@@ -48,20 +49,22 @@ public class AuthConfiguration {
         if (isAuthEnabled() && invalidAuthConfiguration()) {
             return false;
         }
-
-        if (isTlsEnabled() && invalidTlsConfiguration()) {
-            return false;
-        }
-
-        return true;
+        return !isTlsEnabled() || !invalidTlsConfiguration();
     }
 
+    @JsonIgnore
     private boolean invalidAuthConfiguration() {
         return Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(password);
     }
 
+    @JsonIgnore
     private boolean invalidTlsConfiguration() {
         return Strings.isNullOrEmpty(trustStorePath) || Strings.isNullOrEmpty(keyStoreType)
             || Strings.isNullOrEmpty(keyStorePass);
+    }
+
+    @JsonIgnore
+    public String getScheme(){
+        return isTlsEnabled() ? "https" : "http";
     }
 }
