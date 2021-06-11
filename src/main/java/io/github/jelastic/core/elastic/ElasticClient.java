@@ -15,45 +15,30 @@
  */
 package io.github.jelastic.core.elastic;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
-import com.google.common.io.Resources;
 import io.github.jelastic.core.config.JElasticConfiguration;
+import io.github.jelastic.core.utils.ElasticClientUtils;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.apache.http.HttpHost;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.ssl.SSLContextBuilder;
-import org.apache.http.ssl.SSLContexts;
 import org.elasticsearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.settings.Settings;
 
-import javax.net.ssl.SSLContext;
-import java.io.File;
+import javax.inject.Singleton;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyManagementException;
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
 @Slf4j
 @Getter
+@Singleton
 public class ElasticClient {
 
     public final JElasticConfiguration jElasticConfiguration;
@@ -61,36 +46,19 @@ public class ElasticClient {
 
     public ElasticClient(JElasticConfiguration configuration) throws IOException, KeyStoreException, CertificateException, NoSuchAlgorithmException, KeyManagementException {
         Preconditions.checkNotNull(configuration, "Es configuration can't be null");
-
         this.jElasticConfiguration = configuration;
+        this.initializeClient();
+        log.info("Started Es client");
+    }
 
-        final Settings.Builder settingsBuilder = Settings.builder();
-
-        if (!Strings.isNullOrEmpty(jElasticConfiguration.getSettingsFile())) {
-            Path path = Paths.get(jElasticConfiguration.getSettingsFile());
-            if (!path.toFile().exists()) {
-                try {
-                    final URL url = Resources.getResource(jElasticConfiguration.getSettingsFile());
-                    path = new File(url.toURI()).toPath();
-                } catch (URISyntaxException | NullPointerException e) {
-                    throw new IllegalArgumentException("settings file cannot be found", e);
-                }
-            }
-            settingsBuilder.loadFromPath(path);
-        }
-
-        final Settings settings = settingsBuilder
-                .putProperties(jElasticConfiguration.getSettings(), (Function<String, String>) s -> s)
-                .build();
-
-        RestClientBuilder restClientBuilder = RestClient.builder(jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort())).toArray(HttpHost[]::new));
-
-
+    private void initializeClient() throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException, KeyManagementException {
+        RestClientBuilder restClientBuilder = RestClient.builder(
+                jElasticConfiguration.getServers().stream().map(hostAndPort -> new HttpHost(hostAndPort.getHost(), hostAndPort.getPort(),
+                        ElasticClientUtils.getScheme(jElasticConfiguration))).toArray(HttpHost[]::new)
+        );
         if(null != jElasticConfiguration.getAuthConfiguration()){
-
-            final SSLContext sslContext = getSslContext();
-            final CredentialsProvider credentialsProvider = getAuthCredentials();
-
+            val sslContext = ElasticClientUtils.getSslContext(jElasticConfiguration);
+            val credentialsProvider = ElasticClientUtils.getAuthCredentials(jElasticConfiguration);
             restClientBuilder.setHttpClientConfigCallback(httpAsyncClientBuilder -> {
                 if(null != credentialsProvider) {
                     httpAsyncClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
@@ -101,46 +69,12 @@ public class ElasticClient {
                 return httpAsyncClientBuilder;
             });
         }
-
         this.client = new RestHighLevelClient(restClientBuilder);
-
-        if(!jElasticConfiguration.getSettings().isEmpty() || !Strings.isNullOrEmpty(jElasticConfiguration.getSettingsFile())) {
+        val settings = ElasticClientUtils.getSettings(jElasticConfiguration);
+        if(null != settings){
             this.client.cluster().putSettings(new ClusterUpdateSettingsRequest().transientSettings(settings), RequestOptions.DEFAULT);
         }
-        log.info("Started Es client");
     }
-
-    private CredentialsProvider getAuthCredentials() {
-        CredentialsProvider credentialsProvider = null;
-        if(jElasticConfiguration.getAuthConfiguration().isAuthEnabled()) {
-            credentialsProvider = new BasicCredentialsProvider();
-            credentialsProvider.setCredentials(
-                    AuthScope.ANY,
-                    new UsernamePasswordCredentials(
-                            jElasticConfiguration.getAuthConfiguration().getUsername(),
-                            jElasticConfiguration.getAuthConfiguration().getPassword()
-                    )
-            );
-        }
-        return credentialsProvider;
-    }
-
-    private SSLContext getSslContext() throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, KeyManagementException {
-        SSLContext sslContext = null;
-        if(jElasticConfiguration.getAuthConfiguration().isTlsEnabled()){
-            Path trustStorePath = Paths.get(jElasticConfiguration.getAuthConfiguration().getTrustStorePath());
-            KeyStore truststore = KeyStore.getInstance("pkcs12");
-            try (InputStream is = Files.newInputStream(trustStorePath)) {
-                truststore.load(is, jElasticConfiguration.getAuthConfiguration().getKeyStorePass().toCharArray());
-            }
-            SSLContextBuilder sslBuilder = SSLContexts.custom()
-                    .loadTrustMaterial(truststore, null);
-            sslContext = sslBuilder.build();
-
-        }
-        return sslContext;
-    }
-
 
     @SneakyThrows
     public void stop() {

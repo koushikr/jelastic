@@ -16,6 +16,7 @@ package io.github.jelastic.core.config;
  * limitations under the License.
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Strings;
 import io.dropwizard.validation.ValidationMethod;
 import lombok.*;
@@ -39,20 +40,31 @@ public class AuthConfiguration {
 
     private String trustStorePath;
 
+    private String keyStoreType;
+
     private String keyStorePass;
 
     @ValidationMethod(message = "One of Auth/TLS Configuration is not Valid")
     public boolean isValidInput(){
-        boolean valid = true;
-
-        if(isAuthEnabled()){
-            valid = !Strings.isNullOrEmpty(username) && !Strings.isNullOrEmpty(password);
+        if (isAuthEnabled() && invalidAuthConfiguration()) {
+            return false;
         }
+        return !isTlsEnabled() || !invalidTlsConfiguration();
+    }
 
-        if(isTlsEnabled()){
-            valid = valid && !Strings.isNullOrEmpty(trustStorePath) && !Strings.isNullOrEmpty(keyStorePass);
-        }
+    @JsonIgnore
+    private boolean invalidAuthConfiguration() {
+        return Strings.isNullOrEmpty(username) || Strings.isNullOrEmpty(password);
+    }
 
-        return valid;
+    @JsonIgnore
+    private boolean invalidTlsConfiguration() {
+        return Strings.isNullOrEmpty(trustStorePath) || Strings.isNullOrEmpty(keyStoreType)
+            || Strings.isNullOrEmpty(keyStorePass);
+    }
+
+    @JsonIgnore
+    public String getScheme(){
+        return isTlsEnabled() ? "https" : "http";
     }
 }
